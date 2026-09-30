@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Abrindo conversa</title>
+<link rel="stylesheet" href="app.css">
+<style>.dl{min-height:100vh;display:grid;place-items:center;padding:24px;text-align:center;color:var(--ink-2);font-size:14px}.dl .box{display:flex;flex-direction:column;gap:10px;align-items:center}.dl b{color:var(--ink-1);font-size:16px}</style>
+</head>
+<body>
+<!-- Deep link /c/{id}: lê o id (?id= ou #id), exige sessão e abre a conversa no app. Sem sessão, login.html volta para cá pelo ?next=. -->
+<div class="dl" id="dl"><div class="box"><span class="spin" aria-hidden="true"></span><b>Abrindo a conversa</b><span id="dl-msg">Conferindo seu acesso.</span></div></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script src="core.js"></script>
+<script>
+(async () => {
+  const q = new URLSearchParams(location.search);
+  const raw = q.get('id') || (location.hash || '').replace(/^#/, '').replace(/^id=/, '');
+  const id = /^[0-9a-f-]{36}$/i.test(raw || '') ? raw : null;
+  const msg = document.getElementById('dl-msg');
+  await pz.resolveBranding();
+  if (!id) { msg.textContent = 'Link inválido: sem o código da conversa.'; document.querySelector('.spin').remove(); return; }
+  if (!pz.configured) { location.replace(pz.href('index.html') + '#/conversas?id=' + id); return; }
+  const { data: { session } } = await pz.sb.auth.getSession();
+  if (!session) {
+    /* login.html volta para este endereço depois do login */
+    const back = 'c.html' + (pz.tenant.slug ? '?empresa=' + encodeURIComponent(pz.tenant.slug) + '&' : '?') + 'id=' + id;
+    location.replace(pz.href('login.html') + (pz.href('login.html').includes('?') ? '&' : '?') + 'next=' + encodeURIComponent(back));
+    return;
+  }
+  msg.textContent = 'Redirecionando.';
+  location.replace(pz.href('index.html') + '#/conversas?id=' + id);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nova senha</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css?v=1">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="config.js?v=1"></script>
+<script src="core.js?v=1"></script>
+</head>
+<body>
+<main class="auth" id="auth">
+  <form class="card" id="f" novalidate>
+    <div class="logo"><span data-brand-logo><span class="mark" data-brand-initial>P</span></span><span class="cname" data-brand-name>ProtecZap</span></div>
+    <h1 id="title">Nova senha</h1>
+    <p class="sub" id="sub">Escolha uma nova senha para a sua conta.</p>
+    <div class="field">
+      <label for="p1">Nova senha (mínimo 8 caracteres)</label>
+      <input class="input" id="p1" type="password" autocomplete="new-password" minlength="8" required>
+    </div>
+    <div class="field">
+      <label for="p2">Repita a nova senha</label>
+      <input class="input" id="p2" type="password" autocomplete="new-password" minlength="8" required>
+    </div>
+    <div class="err" id="err" role="alert"></div>
+    <button class="btn lg primary block" type="submit" id="go">Salvar e entrar</button>
+    <div class="foot-links" style="justify-content:center"><a class="link" id="login-link" href="login.html">Voltar para o login</a></div>
+  </form>
+  <p class="powered" data-powered>powered by ProtecZap</p>
+</main>
+<script>
+(async () => {
+  const { $, sb, configured, errMsg, href, busy, offlineBanner, resolveBranding, toast } = window.pz;
+  await resolveBranding();
+  $('#login-link').href = href('login.html');
+  if (!configured) { offlineBanner($('#auth')); $('#go').disabled = true; return; }
+  /* O link de recuperação chega com a sessão no hash; espera o supabase-js processar */
+  await new Promise(r => setTimeout(r, 700));
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { $('#sub').textContent = 'Link expirado ou já usado. Peça um novo em "Esqueci a senha".'; $('#go').disabled = true; return; }
+  $('#f').addEventListener('submit', async e => {
+    e.preventDefault(); $('#err').textContent = '';
+    if ($('#p1').value.length < 8) { $('#err').textContent = 'A senha precisa ter pelo menos 8 caracteres.'; return; }
+    if ($('#p1').value !== $('#p2').value) { $('#err').textContent = 'As senhas não conferem.'; return; }
+    busy($('#go'), true, 'Salvando');
+    const { error } = await sb.auth.updateUser({ password: $('#p1').value });
+    if (error) { busy($('#go'), false); $('#err').textContent = errMsg(error); return; }
+    toast('Senha salva.');
+    setTimeout(() => location.replace(href('index.html')), 500);
+  });
+})();
+</script>
+</body>
+</html>

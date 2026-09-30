@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Entrar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css?v=1">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="config.js?v=1"></script>
+<script src="core.js?v=1"></script>
+</head>
+<body>
+<main class="auth" id="auth">
+  <form class="card" id="f" novalidate>
+    <div class="logo"><span data-brand-logo><span class="mark" data-brand-initial>P</span></span><span class="cname" data-brand-name>ProtecZap</span></div>
+    <h1>Entrar</h1>
+    <p class="sub" data-brand-headline>Entre para atender a fila</p>
+    <div class="err" id="top-err" role="alert"></div>
+    <div class="field">
+      <label for="email">E-mail</label>
+      <input class="input" id="email" type="email" autocomplete="username" inputmode="email" required>
+    </div>
+    <div class="field">
+      <label for="pwd">Senha</label>
+      <div class="input-wrap">
+        <input class="input" id="pwd" type="password" autocomplete="current-password" required minlength="6">
+        <button class="btn icon sm ghost suffix" type="button" id="toggle-pwd" aria-label="Mostrar senha"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-eye"/></svg></button>
+      </div>
+    </div>
+    <div class="err" id="err" role="alert"></div>
+    <button class="btn lg primary block" type="submit" id="go">Entrar</button>
+    <div class="foot-links">
+      <button class="link" type="button" id="forgot">Esqueci a senha</button>
+      <a class="link" id="support-link" href="#" target="_blank" rel="noopener" style="display:none">Falar com o suporte</a>
+      <a class="link" id="privacy-link" href="privacidade.html">Política de privacidade</a>
+    </div>
+    <div class="ok-box hide" id="ok"></div>
+  </form>
+  <p class="powered" data-powered>powered by ProtecZap</p>
+</main>
+<script>
+(async () => {
+  const { $, sb, configured, toast, errMsg, href, busy, offlineBanner, resolveBranding } = window.pz;
+  const b = await resolveBranding();
+  try { const pl = $('#privacy-link'); if (pl) pl.href = href('privacidade.html'); } catch (e) { /* mantém o link simples */ }
+  if (b.support_whatsapp) { const a = $('#support-link'); a.href = 'https://wa.me/' + b.support_whatsapp; a.style.display = ''; }
+
+  const q = new URLSearchParams(location.search);
+  if (q.get('erro') === 'empresa') $('#top-err').textContent = 'Esta conta não pertence a esta empresa. Acesse pelo endereço correto.';
+  if (q.get('erro') === 'inativo') $('#top-err').textContent = 'Seu acesso está desativado. Fale com o gestor da sua empresa.';
+
+  if (!configured) {
+    const ban = offlineBanner($('#auth'));
+    $('#auth').prepend(ban);
+    $('#go').disabled = true;
+    $('#forgot').disabled = true;
+  } else {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) { location.replace(href('index.html')); return; }
+  }
+
+  $('#toggle-pwd').onclick = () => { const p = $('#pwd'); const show = p.type === 'password'; p.type = show ? 'text' : 'password'; $('#toggle-pwd').setAttribute('aria-label', show ? 'Ocultar senha' : 'Mostrar senha'); $('#toggle-pwd use').setAttribute('href', show ? '#i-eye-off' : '#i-eye'); };
+
+  $('#f').addEventListener('submit', async e => {
+    e.preventDefault(); $('#err').textContent = ''; $('#top-err').textContent = '';
+    const email = $('#email').value.trim().toLowerCase(), password = $('#pwd').value;
+    if (!email || !password) { $('#err').textContent = 'Preencha e-mail e senha.'; return; }
+    busy($('#go'), true, 'Entrando');
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) { busy($('#go'), false); $('#err').textContent = errMsg(error); return; }
+    const next = q.get('next') || '';
+    /* next aceita só um hash do app ou o deep link c.html?...&id=<uuid> (nunca URL externa) */
+    if (/^c\.html\?[a-z0-9=&%.-]*id=[0-9a-f-]{36}$/i.test(next)) { location.replace(next); return; }
+    location.replace(href('index.html') + (next.startsWith('#') ? next : ''));
+  });
+
+  $('#forgot').onclick = async () => {
+    const email = $('#email').value.trim().toLowerCase();
+    if (!email) { $('#err').textContent = 'Digite seu e-mail e clique de novo em "Esqueci a senha".'; $('#email').focus(); return; }
+    busy($('#forgot'), true, 'Enviando');
+    const redirect = new URL(href('primeiro-acesso.html'), location.href); redirect.searchParams.set('mode', 'recovery');
+    const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: redirect.toString() });
+    busy($('#forgot'), false);
+    /* Mesma mensagem com ou sem conta: não revela se o e-mail existe */
+    if (error && !/rate/i.test(error.message)) console.warn(error);
+    $('#ok').textContent = 'Se este e-mail tiver acesso, você recebe um link para criar uma nova senha em alguns minutos.';
+    $('#ok').classList.remove('hide');
+  };
+})();
+</script>
+</body>
+</html>

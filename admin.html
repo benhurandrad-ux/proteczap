@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Empresas · ProtecZap admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css?v=4">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="config.js?v=1"></script>
+<script src="core.js?v=4"></script>
+<script src="bi.js?v=1"></script>
+</head>
+<body>
+<div class="app" id="app">
+  <header class="brandbar">
+    <div class="wordmark"><span class="mark">P</span><span>ProtecZap · admin</span></div>
+    <span class="sub" data-hide-mobile>Plataforma Atria</span>
+    <div class="right">
+      <span class="wa-ind" id="wa-ind"><span class="dot"></span><span id="wa-txt">instâncias</span></span>
+      <button class="btn icon ghost mob-only" type="button" aria-label="Sair" id="logout-m"><svg class="ic" aria-hidden="true"><use href="#i-logout"/></svg></button>
+    </div>
+  </header>
+  <div class="body">
+    <nav class="side" id="side" aria-label="Menu da plataforma">
+      <div class="nav-title">Plataforma</div>
+      <a class="nav-item" href="#/empresas" data-nav="empresas"><svg class="ic" aria-hidden="true"><use href="#i-building"/></svg>Empresas</a>
+      <a class="nav-item" href="#/nova" data-nav="nova"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg>Nova empresa</a>
+      <a class="nav-item" href="#/instancias" data-nav="instancias"><svg class="ic" aria-hidden="true"><use href="#i-plug"/></svg>Instâncias</a>
+      <a class="nav-item" href="#/saude" data-nav="saude"><svg class="ic" aria-hidden="true"><use href="#i-activity"/></svg>Saúde</a>
+      <div class="nav-title">Conta</div>
+      <a class="nav-item" href="index.html"><svg class="ic" aria-hidden="true"><use href="#i-arrow-l"/></svg>Voltar para o app</a>
+      <div class="me">
+        <div class="av-wrap"><span class="av sm" id="me-av">?</span><span class="st on"></span></div>
+        <div><div class="name" id="me-name">Carregando</div><div class="role">Super admin</div></div>
+        <button class="btn icon sm ghost" type="button" id="logout" aria-label="Sair" title="Sair" style="margin-left:auto"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-logout"/></svg></button>
+      </div>
+    </nav>
+
+    <main class="main" id="main">
+      <div id="banners"></div>
+
+      <!-- Empresas -->
+      <section class="screen active" id="s-empresas" aria-label="Empresas">
+        <div class="topbar"><h1>Empresas</h1><span class="grow"></span><a class="btn primary" href="#/nova"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-plus"/></svg>Nova empresa</a></div>
+        <div class="page"><div class="page-inner">
+          <div class="adm-top">
+            <div class="input-wrap"><svg class="ic ic-sm" style="position:absolute;left:10px;color:var(--ink-4)" aria-hidden="true"><use href="#i-search"/></svg><input class="input has-prefix" id="q" placeholder="Buscar empresa ou subdomínio" aria-label="Buscar empresa"></div>
+            <div class="filters" role="group" aria-label="Filtros"><button class="fchip" type="button" data-f="active" aria-pressed="false">Ativas</button><button class="fchip" type="button" data-f="inactive" aria-pressed="false">Desativadas</button><button class="fchip" type="button" data-f="nomanager" aria-pressed="false">Sem gestor</button></div>
+            <span class="grow"></span>
+            <span class="muted" style="font-size:12px" id="co-count"></span>
+          </div>
+          <div class="card"><div class="card-b" style="padding-top:4px"><div class="tbl-wrap">
+            <table class="tbl dense" id="companies" aria-label="Empresas">
+              <thead><tr><th>Empresa</th><th class="hide-m">Plano</th><th>Status</th><th class="r hide-m">Pessoas</th><th class="hide-m">Criada</th><th><span class="sr-only">Ações</span></th></tr></thead>
+              <tbody></tbody>
+            </table>
+            <div id="co-empty" class="hide"></div>
+          </div></div></div>
+        </div></div>
+        <div class="foot"><span>ProtecZap · Plataforma Atria · admin</span><span>fase 2 · instâncias e conversas</span></div>
+      </section>
+
+      <!-- Nova empresa -->
+      <section class="screen" id="s-nova" aria-label="Nova empresa">
+        <div class="topbar"><a class="btn icon ghost" href="#/empresas" aria-label="Voltar"><svg class="ic" aria-hidden="true"><use href="#i-arrow-l"/></svg></a><h1>Nova empresa</h1><span class="grow"></span></div>
+        <div class="page"><div class="page-inner">
+          <div class="newco">
+            <form class="form" id="nc-form" novalidate>
+              <div class="block">
+                <div class="block-h"><span class="n">1</span>Identidade</div>
+                <div class="block-b">
+                  <div class="grid2">
+                    <div class="field"><label for="nc-name">Nome da empresa</label><input class="input" id="nc-name" placeholder="Ex.: Aliança Auto Proteção" required maxlength="120"></div>
+                    <div class="field"><label for="nc-sub">Subdomínio</label><div class="input-wrap"><input class="input mono has-suffix" id="nc-sub" placeholder="alianca" maxlength="42" pattern="[a-z0-9-]+"><span class="suffix" id="nc-domain">.proteczap.com.br</span></div><span class="help" id="nc-sub-help">Gerado do nome. O gestor acessa por este endereço.</span></div>
+                  </div>
+                  <div class="grid2">
+                    <div class="field"><label for="nc-appname">Nome de exibição (login e barra)</label><input class="input" id="nc-appname" placeholder="Herda o nome da empresa" maxlength="60"></div>
+                    <div class="field"><label for="nc-segment">Segmento</label><select class="input" id="nc-segment"><option value="protecao_veicular">Proteção veicular</option><option value="outro">Outro</option></select></div>
+                  </div>
+                  <div class="grid2">
+                    <div class="field"><span class="lbl" id="nc-logo-lbl">Logo (PNG transparente)</span><button class="drop" type="button" id="nc-drop" aria-labelledby="nc-logo-lbl"><span class="thumb" id="nc-thumb">E</span><span>Arraste o PNG ou <u>clique para escolher</u><br>mínimo 512 px, fundo transparente</span></button><input type="file" id="nc-file" accept="image/png,image/svg+xml,image/webp" class="sr-only" tabindex="-1"></div>
+                    <div class="field"><label for="nc-hex">Cor primária</label><div class="colorrow"><input type="color" id="nc-color" value="#145a3c" aria-label="Seletor de cor primária"><input class="input mono" id="nc-hex" value="#145A3C" maxlength="7" style="width:130px"></div><span class="help">Entra só na barra da marca, botão primário, seleção e acento dos gráficos.</span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="block">
+                <div class="block-h"><span class="n">2</span>Acesso</div>
+                <div class="block-b">
+                  <div class="grid2">
+                    <div class="field"><label for="nc-plan">Plano</label><select class="input" id="nc-plan"></select><span class="help" id="nc-plan-help"></span></div>
+                    <div class="field"><label for="nc-retention">Retenção de mensagens (dias)</label><input class="input mono" id="nc-retention" type="number" min="30" placeholder="730" inputmode="numeric"><span class="help">Vazio = não apaga. Mínimo 30.</span></div>
+                  </div>
+                  <div class="grid2">
+                    <div class="field"><label for="nc-mgr">Nome do primeiro gestor</label><input class="input" id="nc-mgr" autocomplete="off"></div>
+                    <div class="field"><label for="nc-mail">E-mail do gestor</label><input class="input" id="nc-mail" type="email" autocomplete="off"></div>
+                  </div>
+                  <div class="grid2">
+                    <div class="field"><label for="nc-mgr-phone">WhatsApp do gestor</label><input class="input mono" id="nc-mgr-phone" type="tel" inputmode="tel" placeholder="(31) 98215-3370"><span class="help">Obrigatório para gerar o convite. Deixe o gestor em branco para convidar depois.</span></div>
+                    <div class="field"><label for="nc-headline">Frase do login</label><input class="input" id="nc-headline" placeholder="Entre para atender a fila" maxlength="80"></div>
+                  </div>
+                  <div class="toggle-row"><button class="toggle" type="button" role="switch" aria-checked="false" id="nc-hide-credit" aria-label="Ocultar crédito da plataforma"></button><div class="txt"><div class="t">Ocultar "powered by ProtecZap"</div><div class="c">Para empresas que pagam pelo white label completo.</div></div></div>
+                </div>
+              </div>
+              <div class="block">
+                <div class="block-h"><span class="n">3</span>WhatsApp</div>
+                <div class="block-b"><div class="empty-inline"><b>A instância é conectada depois que a empresa existe.</b><span>Depois de criar, abra a aba WhatsApp da empresa, cole o instance id, o token e o client token da Z-API e leia o QR. A empresa nasce com status cinza.</span></div></div>
+              </div>
+              <div class="err" id="nc-err" role="alert"></div>
+              <div class="sticky-foot"><a class="btn lg" href="#/empresas">Cancelar</a><button class="btn lg primary" type="submit" id="nc-create">Criar empresa</button></div>
+            </form>
+            <aside class="preview" aria-label="Pré-visualização">
+              <h3>Pré-visualização ao vivo</h3>
+              <div class="pv-login">
+                <div class="url"><span class="dots"><i></i><i></i><i></i></span><span id="pv-url">empresa.proteczap.com.br</span></div>
+                <div class="body">
+                  <span class="logo" id="pv-logo">E</span>
+                  <span class="cname" id="pv-name">Empresa</span>
+                  <span class="headline" id="pv-headline">Entre para atender a fila</span>
+                  <div class="fake">E-mail</div><div class="fake">Senha</div>
+                  <div class="fakebtn" id="pv-btn">Entrar</div>
+                  <span class="powered" id="pv-powered">powered by ProtecZap</span>
+                </div>
+              </div>
+              <div class="pv-bar">
+                <div class="b" id="pv-bar"><span class="mk" id="pv-mk">E</span><span id="pv-name2">Empresa</span><span class="pill" id="pv-pill"><span class="dot ok"></span>WhatsApp conectado</span></div>
+                <div class="q"><span class="av sm">CH</span><span style="flex:1"><b>Carlos Henrique</b> · Onix 2019</span><span class="sla">1:40</span></div>
+              </div>
+              <div class="contrast" id="pv-contrast"></div>
+              <div class="muted" style="font-size:12px">Cor primária vive na barra, no botão e na seleção. Semáforos e status ficam fixos.</div>
+            </aside>
+          </div>
+        </div></div>
+      </section>
+
+      <!-- Detalhe da empresa -->
+      <section class="screen" id="s-empresa" aria-label="Empresa">
+        <div class="topbar"><a class="btn icon ghost" href="#/empresas" aria-label="Voltar"><svg class="ic" aria-hidden="true"><use href="#i-arrow-l"/></svg></a><span class="company-cell"><span class="logo" id="ce-logo">E</span><span><span class="n" id="ce-name" style="font-size:16px">Empresa</span><span class="s" id="ce-slug"></span></span></span><span class="grow"></span><a class="btn" id="ce-open" target="_blank" rel="noopener"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-link"/></svg>Abrir login</a><a class="btn" id="ce-enter"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-eye"/></svg>Entrar como gestor</a></div>
+        <div class="tabs" role="tablist">
+          <button class="tab" role="tab" aria-selected="true" data-tab="pessoas" type="button">Pessoas<span class="n" id="ce-n-people"></span></button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="marca" type="button">Dados e marca</button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="whatsapp" type="button">WhatsApp</button>
+        </div>
+        <div class="page"><div class="page-inner">
+          <div id="ce-tab-pessoas" style="display:flex;flex-direction:column;gap:12px">
+            <div class="adm-top"><span class="muted" style="font-size:13px" id="ce-people-hint"></span><span class="grow"></span><button class="btn primary" type="button" id="ce-invite"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-plus"/></svg>Convidar pessoa</button></div>
+            <div class="card"><div class="card-b" style="padding-top:4px"><div class="tbl-wrap">
+              <table class="tbl dense" id="ce-people" aria-label="Pessoas da empresa"><thead><tr><th>Pessoa</th><th class="hide-m">Perfil</th><th>Status</th><th class="hide-m">WhatsApp</th><th><span class="sr-only">Ações</span></th></tr></thead><tbody></tbody></table>
+              <div id="ce-people-empty" class="hide"></div>
+            </div></div></div>
+          </div>
+          <div id="ce-tab-marca" class="hide">
+            <div class="card"><div class="card-b form">
+              <div class="grid2">
+                <div class="field"><label for="ce-f-name">Nome da empresa</label><input class="input" id="ce-f-name"></div>
+                <div class="field"><label for="ce-f-appname">Nome de exibição</label><input class="input" id="ce-f-appname"></div>
+              </div>
+              <div class="grid2">
+                <div class="field"><label for="ce-f-hex">Cor primária</label><div class="colorrow"><input type="color" id="ce-f-color" aria-label="Seletor de cor primária"><input class="input mono" id="ce-f-hex" maxlength="7" style="width:130px"></div></div>
+                <div class="field"><span class="lbl" id="ce-logo-lbl">Logo</span><button class="drop" type="button" id="ce-drop" aria-labelledby="ce-logo-lbl"><span class="thumb" id="ce-thumb">E</span><span>Arraste o PNG ou <u>clique para escolher</u></span></button><input type="file" id="ce-file" accept="image/png,image/svg+xml,image/webp" class="sr-only" tabindex="-1"></div>
+              </div>
+              <div class="grid2">
+                <div class="field"><label for="ce-f-plan">Plano</label><select class="input" id="ce-f-plan"></select></div>
+                <div class="field"><label for="ce-f-headline">Frase do login</label><input class="input" id="ce-f-headline" maxlength="80"></div>
+              </div>
+              <div class="toggle-row"><button class="toggle" type="button" role="switch" aria-checked="false" id="ce-f-hide" aria-label="Ocultar crédito da plataforma"></button><div class="txt"><div class="t">Ocultar "powered by ProtecZap"</div><div class="c">O rodapé do login e do app deixa de mostrar o crédito.</div></div></div>
+              <div class="toggle-row"><button class="toggle" type="button" role="switch" aria-checked="true" id="ce-f-active" aria-label="Empresa ativa"></button><div class="txt"><div class="t">Empresa ativa</div><div class="c">Desativada: ninguém entra e o subdomínio mostra a marca da plataforma.</div></div></div>
+              <div class="editor-foot"><span class="grow"></span><button class="btn primary" type="button" id="ce-save">Salvar</button></div>
+            </div></div>
+          </div>
+          <div id="ce-tab-whatsapp" class="hide" style="display:flex;flex-direction:column;gap:12px">
+            <div class="card" id="ce-wa-current"></div>
+            <div class="card"><div class="card-h"><h2 id="ce-wa-form-title">Conectar WhatsApp</h2><span class="sub">as credenciais vão para o cofre e só aparecem aqui</span></div><div class="card-b form">
+              <div class="field"><span class="lbl">Provedor</span><div class="segmented" role="group" aria-label="Provedor" id="ce-wa-prov"><button type="button" aria-pressed="true" data-prov="zapi">Z-API</button><button type="button" aria-pressed="false" data-prov="meta_cloud">Meta Cloud API</button></div><span class="help" id="ce-wa-prov-help">Z-API: número comum lido por QR. Meta Cloud API: número oficial registrado no app da Meta, com modelos aprovados fora da janela de 24 h.</span></div>
+              <div id="ce-wa-meta" class="hide" style="display:flex;flex-direction:column;gap:12px">
+                <div class="grid2">
+                  <div class="field"><label for="ce-wa-pnid">Phone number ID</label><input class="input mono" id="ce-wa-pnid" inputmode="numeric" autocomplete="off" placeholder="1055XXXXXXXXXXX"><span class="help">Painel de apps › WhatsApp › Configuração da API.</span></div>
+                  <div class="field"><label for="ce-wa-waba">WABA ID (conta do WhatsApp Business)</label><input class="input mono" id="ce-wa-waba" inputmode="numeric" autocomplete="off" placeholder="1029XXXXXXXXXXX"><span class="help">Necessário para sincronizar os modelos aprovados.</span></div>
+                </div>
+                <div class="grid2">
+                  <div class="field"><label for="ce-wa-mtoken">Access token permanente (System User)</label><div class="input-wrap"><input class="input mono has-suffix" id="ce-wa-mtoken" type="password" autocomplete="new-password"><button class="btn icon sm ghost suffix" type="button" data-toggle-pw="ce-wa-mtoken" aria-label="Mostrar"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-eye"/></svg></button></div><span class="help">Business Manager › Usuários do sistema › token com whatsapp_business_messaging e whatsapp_business_management.</span></div>
+                  <div class="field"><label for="ce-wa-msecret">App Secret</label><div class="input-wrap"><input class="input mono has-suffix" id="ce-wa-msecret" type="password" autocomplete="new-password"><button class="btn icon sm ghost suffix" type="button" data-toggle-pw="ce-wa-msecret" aria-label="Mostrar"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-eye"/></svg></button></div><span class="help">Painel de apps › Configurações › Básico. Assina cada webhook (X-Hub-Signature-256).</span></div>
+                </div>
+                <div class="grid2">
+                  <div class="field"><label for="ce-wa-mphone">Número do WhatsApp (opcional)</label><input class="input mono" id="ce-wa-mphone" type="tel" inputmode="tel" placeholder="(31) 98215-3370"><span class="help">Aparece na barra da empresa. A Meta confirma no primeiro evento.</span></div>
+                  <div class="field"><span class="lbl">Verify token</span><div class="input-wrap"><input class="input mono" id="ce-wa-vtoken" readonly value="gerado pelo sistema ao salvar" aria-label="Verify token"></div><span class="help">Você cola este valor no campo Verificar token do app da Meta, junto com a URL do webhook.</span></div>
+                </div>
+              </div>
+              <div id="ce-wa-zapi" style="display:flex;flex-direction:column;gap:12px">
+              <div class="grid2">
+                <div class="field"><label for="ce-wa-iid">Instance ID (Z-API)</label><input class="input mono" id="ce-wa-iid" autocomplete="off" placeholder="3E7A9C2B41D0F8..."><span class="help">No painel da Z-API, dentro da instância.</span></div>
+                <div class="field"><label for="ce-wa-token">Token da instância</label><div class="input-wrap"><input class="input mono has-suffix" id="ce-wa-token" type="password" autocomplete="new-password"><button class="btn icon sm ghost suffix" type="button" data-toggle-pw="ce-wa-token" aria-label="Mostrar"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-eye"/></svg></button></div></div>
+              </div>
+              <div class="grid2">
+                <div class="field"><label for="ce-wa-ct">Client-Token (Segurança da conta)</label><div class="input-wrap"><input class="input mono has-suffix" id="ce-wa-ct" type="password" autocomplete="new-password"><button class="btn icon sm ghost suffix" type="button" data-toggle-pw="ce-wa-ct" aria-label="Mostrar"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-eye"/></svg></button></div><span class="help">Segurança > Token de Segurança da Conta. Vai no header de toda chamada.</span></div>
+                <div class="field"><label for="ce-wa-phone">Número do WhatsApp (opcional)</label><input class="input mono" id="ce-wa-phone" type="tel" inputmode="tel" placeholder="(31) 98215-3370"><span class="help">Se informado, o webhook confere o connectedPhone.</span></div>
+              </div>
+              </div>
+              <div class="err" id="ce-wa-err" role="alert"></div>
+              <div class="editor-foot"><span class="muted" style="font-size:12px" id="ce-wa-foot">Ao salvar, o painel configura todos os webhooks da Z-API sozinho (com notifySentByMe).</span><span class="grow"></span><button class="btn primary" type="button" id="ce-wa-save">Salvar e configurar webhooks</button></div>
+              <div class="invite-link hide" id="ce-wa-done"><div style="font-weight:600;font-size:13px" id="ce-wa-done-title">URL do webhook (o segredo só aparece agora)</div><div class="url" id="ce-wa-url" style="word-break:break-all"></div><div id="ce-wa-vt-row" class="hide"><div style="font-weight:600;font-size:13px;margin:6px 0 4px">Verify token</div><div class="url" id="ce-wa-vt" style="word-break:break-all"></div></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" type="button" id="ce-wa-copy"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-copy"/></svg>Copiar URL</button><button class="btn hide" type="button" id="ce-wa-copy-vt"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-key"/></svg>Copiar verify token</button></div><span class="muted" style="font-size:12px" id="ce-wa-done-note"></span></div>
+            </div></div>
+          </div>
+        </div></div>
+      </section>
+
+      <!-- Instâncias -->
+      <section class="screen" id="s-instancias" aria-label="Instâncias">
+        <div class="topbar"><h1>Instâncias</h1><span class="grow"></span><button class="btn" type="button" id="in-refresh"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-refresh"/></svg>Atualizar</button></div>
+        <div class="page"><div class="page-inner">
+          <div class="stat-mini" id="in-stats"></div>
+          <div class="card"><div class="card-b" style="padding-top:4px;overflow-x:auto">
+            <table class="tbl dense compact" id="in-table" aria-label="Instâncias"><thead><tr><th>Empresa</th><th>Provedor</th><th>Número</th><th>Status</th><th>Webhook</th><th>Último evento</th><th class="r">Erros 24h</th><th>Credenciais</th><th><span class="sr-only">Ações</span></th></tr></thead><tbody></tbody></table>
+            <div id="in-empty" class="hide"></div>
+          </div></div>
+        </div></div>
+        <div class="foot"><span>ProtecZap · Plataforma Atria · admin</span><span>fase 2 · instâncias e conversas</span></div>
+      </section>
+
+      <!-- Saúde (fase 6: KPIs da plataforma + cron) -->
+      <section class="screen" id="s-saude" aria-label="Saúde">
+        <div class="topbar"><h1>Saúde</h1><span class="muted" style="font-size:12px" id="sa-sub"></span><span class="grow"></span><button class="btn sm" type="button" id="sa-refresh"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-refresh"/></svg>Atualizar BI agora</button></div>
+        <div class="page"><div class="page-inner">
+          <div class="tiles plat" id="sa-kpis"><div class="skel skel-tile"></div><div class="skel skel-tile"></div><div class="skel skel-tile"></div><div class="skel skel-tile"></div><div class="skel skel-tile"></div><div class="skel skel-tile"></div></div>
+          <div class="stat-mini" id="sa-stats"></div>
+          <div class="card plat-alerts" id="sa-alerts-card"><div class="card-h"><h2>Alertas de plataforma</h2><span class="sub">queda de uso, higiene do dado, provedor e instância</span></div><div class="card-b" style="padding-top:8px"><div class="alerts-list" id="sa-alerts"></div></div></div>
+          <div class="card"><div class="card-h"><h2>Empresas</h2><span class="sub">uso na semana, higiene do dado e risco de churn (0 a 100)</span></div>
+            <div class="card-b" style="padding-top:4px"><div class="tbl-wrap"><table class="tbl plat-table" id="sa-companies"><thead><tr><th>Empresa</th><th>Plano</th><th>WhatsApp</th><th class="r">Msgs 7 d</th><th class="r">Humanas 7 d</th><th class="r">Ativa na semana</th><th class="r">Higiene</th><th class="r">Painel aberto</th><th class="r">Risco</th></tr></thead><tbody></tbody></table></div></div></div>
+          <div class="two">
+            <div class="card"><div class="card-h"><h2>Saúde por provedor</h2><span class="sub">últimos 7 dias</span></div>
+              <div class="card-b" style="padding-top:4px"><div class="tbl-wrap"><table class="tbl" id="sa-providers"><thead><tr><th>Provedor</th><th class="r">Instâncias</th><th class="r">Fora do ar</th><th class="r">Falha de envio</th><th class="r">Desconexões</th><th class="r">Uptime</th><th class="r">Webhook P50 / P95</th></tr></thead><tbody></tbody></table></div></div></div>
+            <div class="card"><div class="card-h"><h2>Benchmark do segmento</h2><span class="sub">30 dias, anônimo entre empresas</span></div><div class="card-b" id="sa-bench"></div></div>
+          </div>
+          <div class="card" id="sa-cron"><div class="card-h"><h2>Cron (sla-monitor)</h2><span class="sub">a cada minuto: SLA, cadências, reaquecimento, automações e envios</span><span class="tools"><span class="chip" id="sa-cron-chip">carregando</span></span></div>
+            <div class="card-b" style="display:flex;flex-direction:column;gap:12px">
+              <div class="cron-kv" id="sa-cron-kv"></div>
+              <div class="log" id="sa-cron-log"></div>
+              <div class="muted" style="font-size:12px" id="sa-cron-foot"></div>
+              <div class="muted" style="font-size:12px" id="sa-bi-foot"></div>
+            </div></div>
+          <div class="card"><div class="card-h"><h2>Sinais</h2><span class="sub">cada linha leva para a instância</span></div><div class="card-b"><div id="sa-list" class="log"></div></div></div>
+        </div></div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<!-- Modal convite -->
+<div class="scrim" id="m-invite" role="dialog" aria-modal="true" aria-labelledby="m-inv-t">
+  <div class="modal wide">
+    <div class="mh"><h2 id="m-inv-t">Convidar pessoa</h2><button class="btn icon ghost close" type="button" data-close aria-label="Fechar"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button></div>
+    <p class="lead">O primeiro gestor entra com o perfil Gestor e monta o resto da equipe.</p>
+    <form class="mb" id="inv-form" novalidate>
+      <div class="grid2">
+        <div class="field"><label for="inv-name">Nome</label><input class="input" id="inv-name" required></div>
+        <div class="field"><label for="inv-mail">E-mail</label><input class="input" id="inv-mail" type="email" required></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label for="inv-phone">WhatsApp</label><input class="input mono" id="inv-phone" type="tel" inputmode="tel" placeholder="(31) 98215-3370" required></div>
+        <div class="field"><label for="inv-profile">Perfil</label><select class="input" id="inv-profile"></select></div>
+      </div>
+      <div class="err" id="inv-err" role="alert"></div>
+    </form>
+    <div class="mb hide" id="inv-done">
+      <div class="invite-link"><div style="font-weight:600;font-size:13px" id="inv-done-title">Convite criado</div><div class="url" id="inv-link"></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" type="button" id="inv-copy"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-copy"/></svg>Copiar link</button><a class="btn" id="inv-wa" target="_blank" rel="noopener"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-whatsapp"/></svg>Mandar pelo WhatsApp</a></div><span class="muted" style="font-size:12px">O link vale por 7 dias.</span></div>
+    </div>
+    <div class="mf"><button class="btn lg" type="button" data-close id="inv-cancel">Cancelar</button><button class="btn lg primary" type="button" id="inv-confirm">Criar convite</button></div>
+  </div>
+</div>
+
+<!-- Painel lateral da instância -->
+<div class="drawer" id="dr-inst" role="dialog" aria-label="Detalhe da instância" aria-modal="true" style="width:min(560px,100vw)">
+  <div class="dh"><span class="logo" id="di-logo" style="width:28px;height:28px;border-radius:6px;display:grid;place-items:center;font-weight:700;font-size:13px">E</span><h2 id="di-title">Instância</h2><button class="btn icon ghost" type="button" data-close aria-label="Fechar"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button></div>
+  <div class="db" id="di-body"></div>
+  <div class="df"><button class="btn lg" type="button" data-close>Fechar</button><button class="btn lg" type="button" id="di-log-more">Ver log completo</button></div>
+</div>
+
+<!-- Modal QR -->
+<div class="scrim" id="m-qr" role="dialog" aria-modal="true" aria-labelledby="m-qr-t">
+  <div class="modal">
+    <div class="mh"><h2 id="m-qr-t">Conectar WhatsApp</h2><button class="btn icon ghost close" type="button" data-close aria-label="Fechar"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button></div>
+    <p class="lead">No celular da empresa: WhatsApp › Dispositivos conectados › Conectar dispositivo, e aponte para o QR.</p>
+    <div class="mb"><div class="qr-box" id="qr-box"><span class="muted">Gerando QR</span></div></div>
+    <div class="mf"><button class="btn lg" type="button" data-close>Fechar</button><button class="btn lg primary" type="button" id="qr-new"><svg class="ic ic-sm" aria-hidden="true"><use href="#i-refresh"/></svg>Gerar novo QR</button></div>
+  </div>
+</div>
+
+<script>
+(async () => {
+  const pz = window.pz;
+  const { $, $$, esc, initials, ico, fmtPhone, phoneDigits, maskPhoneInput, dt, toast, openModal, closeModals, confirmModal, busy, copyText, errMsg, publicLink, inkFor, contrast, isHex, slugify, offlineBanner } = pz;
+  const sb = pz.sb;
+  const DEMO = !pz.configured;
+  pz.applyBranding(pz.platformBranding());
+  document.title = 'Empresas · ProtecZap admin';
+
+  let C;
+  let plans = [], companies = [];
+  const DEMO_PLANS = [{ code: 'start', name: 'Start', max_users: 5 }, { code: 'pro', name: 'Pro', max_users: 15 }, { code: 'enterprise', name: 'Enterprise', max_users: 60 }];
+  const DEMO_COMPANIES = [
+    { id: 'c1', name: 'Aliança Auto Proteção Ltda', slug: 'alianca', is_active: true, created_at: '2026-09-20T12:00:00Z', plans: DEMO_PLANS[1], company_branding: { app_name: 'Aliança Auto Proteção', primary_color: '#145A3C', hide_platform_credit: false, login_headline: null, logo_path: null }, members: 3, invites: 1, gestor: true },
+    { id: 'c2', name: 'Norte Proteção Veicular', slug: 'norte', is_active: true, created_at: '2026-09-25T12:00:00Z', plans: DEMO_PLANS[0], company_branding: { app_name: 'Norte Proteção Veicular', primary_color: '#1D4ED8', hide_platform_credit: true, login_headline: null, logo_path: null }, members: 0, invites: 1, gestor: false },
+    { id: 'c3', name: 'Vigia Proteção Veicular', slug: 'vigia', is_active: false, created_at: '2026-08-02T12:00:00Z', plans: DEMO_PLANS[0], company_branding: { app_name: 'Vigia', primary_color: '#B4531F', hide_platform_credit: false, login_headline: null, logo_path: null }, members: 2, invites: 0, gestor: true }
+  ];
+  if (DEMO) {
+    C = { user_id: 'sa', is_super_admin: true, profile: { full_name: 'Ben Hur Andrade' } };
+    offlineBanner($('#banners'));
+  } else {
+    const s = await pz.requireSession({ admin: true }); if (!s) return; C = s.ctx;
+  }
+  $('#me-av').textContent = initials(C.profile && C.profile.full_name); $('#me-name').textContent = (C.profile && C.profile.full_name) || 'Super admin';
+  $$('#logout,#logout-m').forEach(b => b.onclick = () => DEMO ? toast('Modo demonstração: sem sessão para sair.') : pz.signOut());
+
+  async function loadPlans() {
+    if (DEMO) { plans = DEMO_PLANS; return; }
+    const { data } = await sb.from('plans').select('code,name,max_users').eq('is_active', true).order('max_users'); plans = data || [];
+  }
+  async function loadCompanies() {
+    if (DEMO) { companies = DEMO_COMPANIES; return; }
+    const { data, error } = await sb.from('companies').select('id,name,slug,segment,is_active,created_at,custom_domain,retention_days,plan_id,plans(code,name,max_users),company_branding(app_name,primary_color,logo_path,hide_platform_credit,login_headline,support_whatsapp),memberships(id,is_active,accepted_at)').is('deleted_at', null).order('created_at', { ascending: false });
+    if (error) { console.error(error); toast(errMsg(error), { bad: true }); }
+    companies = (data || []).map(c => Object.assign(c, { members: (c.memberships || []).filter(m => m.is_active).length, gestor: (c.memberships || []).some(m => m.accepted_at) }));
+  }
+  await Promise.all([loadPlans(), loadCompanies()]);
+  (async () => { await loadInstances(); renderInstances(); const on = instances.filter(i => i.status === 'connected').length; $('#wa-txt').textContent = `${instances.length} instância(s) · ${on} conectada(s)`; $('#wa-ind .dot').className = 'dot ' + (instances.length && on === instances.length ? 'ok' : instances.length ? 'warn' : ''); })();
+  const planSel = (sel, help) => { sel.innerHTML = plans.map(p => `<option value="${esc(p.code)}">${esc(p.name)} · até ${p.max_users} usuários</option>`).join(''); if (help) { const u = () => { const p = plans.find(x => x.code === sel.value); help.textContent = p ? `Limite de ${p.max_users} usuários ativos contando convites pendentes.` : ''; }; sel.onchange = u; u(); } };
+  const logoCell = (c, size = '') => { const b = c.company_branding || {}; const url = b.logo_path ? pz.publicUrl('branding', b.logo_path) : null; return `<span class="logo ${size}" style="background:${esc(b.primary_color || '#2b2b29')};color:${inkFor(b.primary_color || '#2b2b29')}">${url ? `<img src="${esc(url)}" alt="">` : esc((b.app_name || c.name || 'E')[0].toUpperCase())}</span>`; };
+
+  /* ---------- Empresas ---------- */
+  let filter = null;
+  function renderCompanies() {
+    const q = $('#q').value.trim().toLowerCase();
+    const list = companies.filter(c => (!q || c.name.toLowerCase().includes(q) || c.slug.includes(q) || ((c.company_branding || {}).app_name || '').toLowerCase().includes(q)))
+      .filter(c => filter === 'active' ? c.is_active : filter === 'inactive' ? !c.is_active : filter === 'nomanager' ? !c.gestor : true);
+    $('#co-count').textContent = `${list.length} de ${companies.length}`;
+    $('#companies tbody').innerHTML = list.map(c => `<tr class="clickable ${!c.gestor && c.is_active ? 'problem' : ''}" data-id="${esc(c.id)}"><td><span class="company-cell">${logoCell(c)}<span><span class="n">${esc((c.company_branding || {}).app_name || c.name)}</span><span class="s">${esc(c.slug)}.${esc(pz.PZ.ROOT_DOMAIN)}</span></span></span></td>
+      <td class="hide-m"><span class="chip">${esc((c.plans || {}).name || '')}</span></td>
+      <td><span class="status-txt"><span class="dot ${c.is_active ? (c.gestor ? 'ok' : 'warn') : ''}"></span>${c.is_active ? (c.gestor ? 'Ativa' : 'Sem gestor ainda') : 'Desativada'}</span></td>
+      <td class="r hide-m">${c.members}${(c.plans || {}).max_users ? ` / ${c.plans.max_users}` : ''}</td>
+      <td class="hide-m">${esc(dt(c.created_at))}</td>
+      <td><span class="rowbtns"><a class="btn sm" href="#/empresa?id=${esc(c.id)}">Abrir</a></span></td></tr>`).join('');
+    $('#co-empty').classList.toggle('hide', !!list.length);
+    if (!list.length) $('#co-empty').innerHTML = companies.length ? `<div class="empty-inline" style="margin:12px 0"><b>Nenhuma empresa com esse filtro.</b></div>` : `<div class="empty-inline" style="margin:12px 0"><b>Nenhuma empresa ainda. Crie a primeira.</b><a class="btn primary" href="#/nova">${ico('i-plus', 'ic ic-sm')}Nova empresa</a></div>`;
+  }
+  $('#q').addEventListener('input', renderCompanies);
+  $$('.adm-top .fchip').forEach(b => b.onclick = () => { filter = filter === b.dataset.f ? null : b.dataset.f; $$('.adm-top .fchip').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.f === filter))); renderCompanies(); });
+  $('#companies').addEventListener('click', e => { if (e.target.closest('a')) return; const tr = e.target.closest('tr[data-id]'); if (tr) location.hash = '#/empresa?id=' + tr.dataset.id; });
+
+  /* ---------- Nova empresa ---------- */
+  let ncLogo = null, ncLogoUrl = null, subTouched = false, slugTimer;
+  $('#nc-domain').textContent = '.' + pz.PZ.ROOT_DOMAIN;
+  planSel($('#nc-plan'), $('#nc-plan-help'));
+  maskPhoneInput($('#nc-mgr-phone'));
+  function ncPreview() {
+    const hex = isHex($('#nc-hex').value) ? $('#nc-hex').value : '#145A3C', ink = inkFor(hex);
+    const name = $('#nc-appname').value.trim() || $('#nc-name').value.trim() || 'Empresa', ini = (name[0] || 'E').toUpperCase();
+    const cr = contrast(hex, ink), ok = cr >= 4.5;
+    $('#pv-url').textContent = ($('#nc-sub').value || 'empresa') + '.' + pz.PZ.ROOT_DOMAIN;
+    $('#pv-name').textContent = name; $('#pv-name2').textContent = name; $('#pv-headline').textContent = $('#nc-headline').value.trim() || 'Entre para atender a fila';
+    const logoHtml = ncLogoUrl ? `<img src="${esc(ncLogoUrl)}" alt="">` : esc(ini);
+    [['#pv-logo', ncLogoUrl ? '#fff' : hex, ink], ['#nc-thumb', ncLogoUrl ? '#fff' : hex, ink], ['#pv-mk', ncLogoUrl ? '#fff' : ink, hex]].forEach(([s, bg, fg]) => { const e = $(s); e.innerHTML = logoHtml; e.style.background = bg; e.style.color = fg; });
+    $('#pv-btn').style.background = hex; $('#pv-btn').style.color = ink; $('#pv-bar').style.background = hex; $('#pv-bar').style.color = ink;
+    $('#pv-pill').style.background = ink === '#ffffff' ? 'rgba(0,0,0,.14)' : 'rgba(255,255,255,.2)';
+    $('#pv-powered').classList.toggle('hide', $('#nc-hide-credit').getAttribute('aria-checked') === 'true');
+    $('#pv-contrast').innerHTML = `${ico(ok ? 'i-check' : 'i-alert-tri', 'ic ic-sm')}<span>Contraste do texto sobre a cor primária: <b>${cr.toFixed(1).replace('.', ',')}:1</b></span><span class="band ${ok ? 'ok' : 'warn'}">${ok ? 'ok' : 'abaixo de 4,5:1 · sugerimos um tom mais escuro'}</span>`;
+    $('#pv-contrast .ic').style.color = ok ? 'var(--ok-text)' : 'var(--warn-text)';
+  }
+  async function checkSlug() {
+    const s = $('#nc-sub').value.trim().toLowerCase(); const help = $('#nc-sub-help'); $('#nc-sub').classList.remove('is-error');
+    if (!s) { help.textContent = 'Gerado do nome. O gestor acessa por este endereço.'; return; }
+    if (!/^[a-z0-9](?:[a-z0-9-]{1,40}[a-z0-9])?$/.test(s)) { help.textContent = 'Use só letras minúsculas, números e hífen (3 a 42 caracteres).'; $('#nc-sub').classList.add('is-error'); return; }
+    if (DEMO) { const taken = companies.some(c => c.slug === s); help.textContent = taken ? `Este endereço já está em uso. Sugestão: ${s}2` : 'Endereço livre.'; $('#nc-sub').classList.toggle('is-error', taken); return; }
+    const { data, error } = await sb.rpc('slug_available', { p_slug: s });
+    if (error) { help.textContent = errMsg(error); return; }
+    help.textContent = data ? 'Endereço livre.' : `Este endereço já está em uso ou é reservado. Sugestão: ${s}2`; $('#nc-sub').classList.toggle('is-error', !data);
+  }
+  $('#nc-name').addEventListener('input', () => { if (!subTouched) $('#nc-sub').value = slugify($('#nc-name').value) || ''; ncPreview(); clearTimeout(slugTimer); slugTimer = setTimeout(checkSlug, 350); });
+  $('#nc-sub').addEventListener('input', () => { subTouched = !!$('#nc-sub').value; $('#nc-sub').value = $('#nc-sub').value.toLowerCase().replace(/[^a-z0-9-]/g, ''); ncPreview(); clearTimeout(slugTimer); slugTimer = setTimeout(checkSlug, 350); });
+  ['#nc-appname', '#nc-headline'].forEach(s => $(s).addEventListener('input', ncPreview));
+  $('#nc-hex').addEventListener('input', () => { if (isHex($('#nc-hex').value)) $('#nc-color').value = $('#nc-hex').value.toLowerCase(); ncPreview(); });
+  $('#nc-color').addEventListener('input', e => { $('#nc-hex').value = e.target.value.toUpperCase(); ncPreview(); });
+  $('#nc-hide-credit').onclick = () => { $('#nc-hide-credit').setAttribute('aria-checked', String($('#nc-hide-credit').getAttribute('aria-checked') !== 'true')); ncPreview(); };
+  const ncPick = f => { if (!f) return; if (f.size > 2 * 1024 * 1024) return toast('Logo muito grande. Envie um PNG de até 2 MB.', { bad: true }); ncLogo = f; ncLogoUrl = URL.createObjectURL(f); ncPreview(); };
+  $('#nc-drop').onclick = () => $('#nc-file').click(); $('#nc-file').onchange = e => ncPick(e.target.files[0]);
+  ['dragenter', 'dragover'].forEach(ev => $('#nc-drop').addEventListener(ev, e => { e.preventDefault(); $('#nc-drop').classList.add('over'); }));
+  ['dragleave', 'drop'].forEach(ev => $('#nc-drop').addEventListener(ev, e => { e.preventDefault(); $('#nc-drop').classList.remove('over'); if (ev === 'drop') ncPick(e.dataTransfer.files[0]); }));
+  ncPreview();
+  $('#nc-form').addEventListener('submit', async e => {
+    e.preventDefault(); $('#nc-err').textContent = '';
+    const name = $('#nc-name').value.trim(), slug = $('#nc-sub').value.trim().toLowerCase(), hex = $('#nc-hex').value.trim();
+    if (!name) { $('#nc-err').textContent = 'Informe o nome da empresa.'; $('#nc-name').focus(); return; }
+    if (!/^[a-z0-9](?:[a-z0-9-]{1,40}[a-z0-9])?$/.test(slug)) { $('#nc-err').textContent = 'Subdomínio inválido. Use só letras minúsculas, números e hífen.'; $('#nc-sub').focus(); return; }
+    if (!isHex(hex)) { $('#nc-err').textContent = 'Cor primária inválida. Use o formato #145A3C.'; $('#nc-hex').focus(); return; }
+    const mgrName = $('#nc-mgr').value.trim(), mgrMail = $('#nc-mail').value.trim().toLowerCase(), mgrPhone = phoneDigits($('#nc-mgr-phone').value);
+    const wantsMgr = !!(mgrName || mgrMail || mgrPhone);
+    if (wantsMgr) {
+      if (!mgrName) { $('#nc-err').textContent = 'Informe o nome do gestor ou deixe os três campos vazios.'; return; }
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mgrMail)) { $('#nc-err').textContent = 'Confira o e-mail do gestor.'; return; }
+      if (!/^[0-9]{12,13}$/.test(mgrPhone)) { $('#nc-err').textContent = 'WhatsApp do gestor incompleto. Use DDD + número, ex.: (31) 98215-3370.'; return; }
+    }
+    busy($('#nc-create'), true, 'Criando empresa');
+    const branding = { app_name: $('#nc-appname').value.trim() || name, primary_color: hex, login_headline: $('#nc-headline').value.trim() || null, hide_platform_credit: $('#nc-hide-credit').getAttribute('aria-checked') === 'true', segment: $('#nc-segment').value, retention_days: $('#nc-retention').value || null };
+    if (DEMO) {
+      const c = { id: 'c' + Date.now(), name, slug, is_active: true, created_at: new Date().toISOString(), plans: plans.find(p => p.code === $('#nc-plan').value), company_branding: Object.assign({ logo_path: null }, branding), members: 0, invites: wantsMgr ? 1 : 0, gestor: false, _logoUrl: ncLogoUrl };
+      companies.unshift(c); busy($('#nc-create'), false); toast(wantsMgr ? 'Empresa criada. Copie o link do gestor na aba Pessoas.' : 'Empresa criada. Convide o gestor na aba Pessoas.'); location.hash = '#/empresa?id=' + c.id; $('#nc-form').reset(); ncLogo = null; ncLogoUrl = null; subTouched = false; ncPreview(); return;
+    }
+    const { data: created, error } = await sb.rpc('admin_create_company', { p_name: name, p_slug: slug, p_branding: branding, p_plan: $('#nc-plan').value });
+    if (error) { busy($('#nc-create'), false); $('#nc-err').textContent = errMsg(error); return; }
+    if (ncLogo) {
+      const ext = (ncLogo.name.split('.').pop() || 'png').toLowerCase(); const path = `${created.id}/logo-${Date.now()}.${ext}`;
+      const { error: ue } = await sb.storage.from('branding').upload(path, ncLogo, { upsert: true, contentType: ncLogo.type || 'image/png', cacheControl: '3600' });
+      if (ue) toast('Empresa criada, mas a logo não subiu: ' + errMsg(ue), { bad: true });
+      else await sb.from('company_branding').update({ logo_path: path }).eq('company_id', created.id);
+    }
+    let inviteMsg = '';
+    if (wantsMgr) {
+      const { data: profs } = await sb.from('permission_profiles').select('id,name').eq('company_id', created.id).eq('name', 'Gestor').limit(1);
+      const gestor = profs && profs[0];
+      if (gestor) {
+        const { data: inv, error: ie } = await sb.rpc('admin_invite_user', { p_company_id: created.id, p_email: mgrMail, p_full_name: mgrName, p_phone: mgrPhone, p_permission_profile_id: gestor.id });
+        if (ie) inviteMsg = ' O convite do gestor falhou: ' + errMsg(ie); else inviteMsg = ' Copie o link do gestor na aba Pessoas.';
+      }
+    }
+    busy($('#nc-create'), false);
+    await loadCompanies();
+    toast('Empresa criada.' + inviteMsg);
+    $('#nc-form').reset(); ncLogo = null; ncLogoUrl = null; subTouched = false; ncPreview();
+    location.hash = '#/empresa?id=' + created.id;
+  });
+
+  /* ---------- Detalhe da empresa ---------- */
+  let cur = null, curMembers = [], curInvites = [], curProfiles = [], ceLogo = null, ceLogoUrl = null;
+  maskPhoneInput($('#inv-phone'));
+  planSel($('#ce-f-plan'));
+  async function loadCompanyDetail(id) {
+    cur = companies.find(c => c.id === id); if (!cur) { location.hash = '#/empresas'; return; }
+    if (DEMO) {
+      curProfiles = [{ id: 'p1', name: 'Gestor' }, { id: 'p2', name: 'Consultor' }, { id: 'p3', name: 'Supervisor' }];
+      curMembers = cur.id === 'c1' ? [{ id: 'm1', is_active: true, accepted_at: '2026-09-20', permission_profile_id: 'p1', profiles: { full_name: 'Rafael Guimarães', email: 'rafael@empresa.com.br', phone: '5531982153370' } }, { id: 'm2', is_active: true, accepted_at: '2026-09-21', permission_profile_id: 'p2', profiles: { full_name: 'Ana Beatriz Ramos', email: 'ana@empresa.com.br', phone: '5531984527710' } }] : [];
+      curInvites = cur.invites ? [{ id: 'i1', full_name: 'Paulo Henrique Duarte', email: 'paulo@' + cur.slug + '.com.br', phone: '5531999998888', permission_profile_id: 'p1', token: 'demo', expires_at: new Date(Date.now() + 5 * 864e5).toISOString() }] : [];
+    } else {
+      const [m, i, p] = await Promise.all([
+        sb.from('memberships').select('id,user_id,is_active,accepted_at,permission_profile_id,profiles(full_name,email,phone)').eq('company_id', id).is('deleted_at', null).order('created_at'),
+        sb.from('invites').select('*').eq('company_id', id).is('accepted_at', null).is('cancelled_at', null).gt('expires_at', new Date().toISOString()).order('created_at', { ascending: false }),
+        sb.from('permission_profiles').select('id,name,is_system').eq('company_id', id).eq('is_active', true).order('is_system', { ascending: false }).order('name')
+      ]);
+      curMembers = m.data || []; curInvites = i.data || []; curProfiles = p.data || [];
+    }
+    renderDetail();
+  }
+  const pname = id => (curProfiles.find(p => p.id === id) || {}).name || '';
+  const invLink = i => { const base = publicLink(cur.slug, 'entrar.html'); return base + (base.includes('?') ? '&' : '?') + 'token=' + encodeURIComponent(i.token); };
+  function renderDetail() {
+    const b = cur.company_branding || {};
+    $('#ce-logo').outerHTML = logoCell(cur).replace('class="logo', 'id="ce-logo" class="logo');
+    if (cur._logoUrl) { $('#ce-logo').innerHTML = `<img src="${esc(cur._logoUrl)}" alt="">`; $('#ce-logo').style.background = '#fff'; }
+    $('#ce-name').textContent = b.app_name || cur.name; $('#ce-slug').textContent = `${cur.slug}.${pz.PZ.ROOT_DOMAIN}`;
+    $('#ce-open').href = publicLink(cur.slug, 'login.html');
+    $('#ce-enter').href = publicLink(cur.slug, 'index.html');
+    $('#ce-n-people').textContent = curMembers.filter(m => m.is_active).length + (curInvites.length ? ` + ${curInvites.length}` : '');
+    $('#ce-people-hint').textContent = `${curMembers.filter(m => m.is_active).length} de ${(cur.plans || {}).max_users || '?'} usuários do plano${curInvites.length ? ` · ${curInvites.length} convite(s) pendente(s)` : ''}`;
+    const rows = curMembers.map(m => { const p = m.profiles || {}; return `<tr><td><span class="company-cell"><span class="av sm">${esc(initials(p.full_name))}</span><span><span class="n">${esc(p.full_name || '')}</span><span class="s" style="font-family:var(--font-ui)">${esc(p.email || '')}</span></span></span></td><td class="hide-m"><span class="chip">${esc(pname(m.permission_profile_id))}</span></td><td><span class="status-txt"><span class="dot ${m.is_active ? 'ok' : ''}"></span>${m.is_active ? 'Ativo' : 'Desativado'}</span></td><td class="hide-m mono">${esc(fmtPhone(p.phone))}</td><td></td></tr>`; })
+      .concat(curInvites.map(i => `<tr><td><span class="company-cell"><span class="av sm">${esc(initials(i.full_name))}</span><span><span class="n">${esc(i.full_name)}</span><span class="s" style="font-family:var(--font-ui)">${esc(i.email)}</span></span></span></td><td class="hide-m"><span class="chip">${esc(pname(i.permission_profile_id))}</span></td><td><span class="status-txt"><span class="dot warn"></span>Convidado · expira ${esc(dt(i.expires_at))}</span></td><td class="hide-m mono">${esc(fmtPhone(i.phone))}</td><td><span class="rowbtns"><button class="btn sm" type="button" data-copy="${esc(i.id)}">${ico('i-copy', 'ic ic-sm')}<span data-hide-mobile>Copiar link</span></button><button class="btn icon sm ghost" type="button" data-cancel="${esc(i.id)}" aria-label="Cancelar convite">${ico('i-x', 'ic ic-sm')}</button></span></td></tr>`));
+    $('#ce-people tbody').innerHTML = rows.join('');
+    $('#ce-people-empty').classList.toggle('hide', !!rows.length);
+    if (!rows.length) $('#ce-people-empty').innerHTML = `<div class="empty-inline" style="margin:12px 0"><b>Ninguém ainda.</b><span>Convide o primeiro gestor. Ele recebe o link, cria a senha e monta a equipe.</span><button class="btn primary" type="button" id="ce-invite-empty">${ico('i-plus', 'ic ic-sm')}Convidar gestor</button></div>`;
+    const ie = $('#ce-invite-empty'); if (ie) ie.onclick = openInvite;
+    /* aba marca */
+    $('#ce-f-name').value = cur.name; $('#ce-f-appname').value = b.app_name || ''; $('#ce-f-hex').value = (b.primary_color || '#2B2B29').toUpperCase(); $('#ce-f-color').value = (b.primary_color || '#2b2b29').toLowerCase();
+    $('#ce-f-headline').value = b.login_headline || ''; $('#ce-f-plan').value = (cur.plans || {}).code || plans[0]?.code;
+    $('#ce-f-hide').setAttribute('aria-checked', String(!!b.hide_platform_credit)); $('#ce-f-active').setAttribute('aria-checked', String(!!cur.is_active));
+    ceLogo = null; ceLogoUrl = cur._logoUrl || (b.logo_path ? pz.publicUrl('branding', b.logo_path) : null);
+    ceThumb();
+  }
+  function ceThumb() { const hex = isHex($('#ce-f-hex').value) ? $('#ce-f-hex').value : '#2B2B29'; const t = $('#ce-thumb'); t.innerHTML = ceLogoUrl ? `<img src="${esc(ceLogoUrl)}" alt="">` : esc(($('#ce-f-appname').value || cur.name || 'E')[0].toUpperCase()); t.style.background = ceLogoUrl ? '#fff' : hex; t.style.color = inkFor(hex); }
+  $('#ce-f-hex').addEventListener('input', () => { if (isHex($('#ce-f-hex').value)) $('#ce-f-color').value = $('#ce-f-hex').value.toLowerCase(); ceThumb(); });
+  $('#ce-f-color').addEventListener('input', e => { $('#ce-f-hex').value = e.target.value.toUpperCase(); ceThumb(); });
+  $('#ce-f-appname').addEventListener('input', ceThumb);
+  $$('#ce-f-hide,#ce-f-active').forEach(t => t.onclick = () => t.setAttribute('aria-checked', String(t.getAttribute('aria-checked') !== 'true')));
+  const cePick = f => { if (!f) return; if (f.size > 2 * 1024 * 1024) return toast('Logo muito grande. Envie um PNG de até 2 MB.', { bad: true }); ceLogo = f; ceLogoUrl = URL.createObjectURL(f); ceThumb(); };
+  $('#ce-drop').onclick = () => $('#ce-file').click(); $('#ce-file').onchange = e => cePick(e.target.files[0]);
+  ['dragenter', 'dragover'].forEach(ev => $('#ce-drop').addEventListener(ev, e => { e.preventDefault(); $('#ce-drop').classList.add('over'); }));
+  ['dragleave', 'drop'].forEach(ev => $('#ce-drop').addEventListener(ev, e => { e.preventDefault(); $('#ce-drop').classList.remove('over'); if (ev === 'drop') cePick(e.dataTransfer.files[0]); }));
+  function showCeTab(tab) { $$('#s-empresa .tab').forEach(x => x.setAttribute('aria-selected', String(x.dataset.tab === tab))); $('#ce-tab-pessoas').classList.toggle('hide', tab !== 'pessoas'); $('#ce-tab-marca').classList.toggle('hide', tab !== 'marca'); $('#ce-tab-whatsapp').classList.toggle('hide', tab !== 'whatsapp'); if (tab === 'whatsapp') renderCompanyWa(); }
+  $$('#s-empresa .tab:not([disabled])').forEach(t => t.onclick = () => showCeTab(t.dataset.tab));
+  $('#ce-people').addEventListener('click', async e => {
+    const cp = e.target.closest('[data-copy]'); if (cp) { const i = curInvites.find(x => x.id === cp.dataset.copy); if (i) copyText(invLink(i)); return; }
+    const cc = e.target.closest('[data-cancel]');
+    if (cc) { const i = curInvites.find(x => x.id === cc.dataset.cancel); if (!i) return; if (!(await confirmModal({ title: 'Cancelar convite', text: `${i.full_name} não vai conseguir entrar com este link.`, ok: 'Cancelar convite', danger: true }))) return; if (DEMO) { curInvites = curInvites.filter(x => x.id !== i.id); cur.invites = curInvites.length; renderDetail(); return; } const { error } = await sb.rpc('cancel_invite', { p_invite_id: i.id }); if (error) return toast(errMsg(error), { bad: true }); await loadCompanyDetail(cur.id); toast('Convite cancelado.'); }
+  });
+  $('#ce-save').onclick = async () => {
+    const hex = $('#ce-f-hex').value.trim(); if (!isHex(hex)) return toast('Cor inválida. Use o formato #145A3C.', { bad: true });
+    const wasActive = cur.is_active, nowActive = $('#ce-f-active').getAttribute('aria-checked') === 'true';
+    if (wasActive && !nowActive && !(await confirmModal({ title: 'Desativar empresa', text: `Ninguém da ${cur.name} vai conseguir entrar e o subdomínio passa a mostrar a marca da plataforma.`, ok: 'Desativar', danger: true }))) return;
+    busy($('#ce-save'), true);
+    const bpatch = { app_name: $('#ce-f-appname').value.trim() || cur.name, primary_color: hex, login_headline: $('#ce-f-headline').value.trim() || null, hide_platform_credit: $('#ce-f-hide').getAttribute('aria-checked') === 'true' };
+    if (DEMO) { Object.assign(cur.company_branding, bpatch); cur.name = $('#ce-f-name').value.trim() || cur.name; cur.is_active = nowActive; cur.plans = plans.find(p => p.code === $('#ce-f-plan').value); if (ceLogoUrl) cur._logoUrl = ceLogoUrl; busy($('#ce-save'), false); renderDetail(); toast('Empresa salva.'); return; }
+    if (ceLogo) { const ext = (ceLogo.name.split('.').pop() || 'png').toLowerCase(); const path = `${cur.id}/logo-${Date.now()}.${ext}`; const { error: ue } = await sb.storage.from('branding').upload(path, ceLogo, { upsert: true, contentType: ceLogo.type || 'image/png', cacheControl: '3600' }); if (ue) { busy($('#ce-save'), false); return toast('A logo não subiu: ' + errMsg(ue), { bad: true }); } bpatch.logo_path = path; }
+    const plan = plans.find(p => p.code === $('#ce-f-plan').value);
+    let planId = cur.plan_id; if (plan && plan.code !== (cur.plans || {}).code) { const { data } = await sb.from('plans').select('id').eq('code', plan.code).single(); planId = data && data.id; }
+    const [r1, r2] = await Promise.all([
+      sb.from('company_branding').update(bpatch).eq('company_id', cur.id),
+      sb.from('companies').update({ name: $('#ce-f-name').value.trim() || cur.name, is_active: nowActive, plan_id: planId }).eq('id', cur.id)
+    ]);
+    busy($('#ce-save'), false);
+    if (r1.error || r2.error) return toast(errMsg(r1.error || r2.error), { bad: true });
+    await loadCompanies(); await loadCompanyDetail(cur.id); toast('Empresa salva. Já vale para todos da empresa.');
+  };
+  /* Convite dentro da empresa */
+  function openInvite() {
+    $('#inv-form').reset(); $('#inv-err').textContent = ''; $('#inv-form').classList.remove('hide'); $('#inv-done').classList.add('hide'); $('#inv-confirm').textContent = 'Criar convite'; $('#inv-cancel').textContent = 'Cancelar';
+    $('#inv-profile').innerHTML = curProfiles.map(p => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
+    const g = curProfiles.find(p => p.name === 'Gestor'); if (g && !curMembers.length) $('#inv-profile').value = g.id;
+    openModal('m-invite');
+  }
+  $('#ce-invite').onclick = openInvite;
+  $('#inv-confirm').onclick = async () => {
+    if (!$('#inv-done').classList.contains('hide')) { closeModals(); return; }
+    $('#inv-err').textContent = '';
+    const name = $('#inv-name').value.trim(), email = $('#inv-mail').value.trim().toLowerCase(), phone = phoneDigits($('#inv-phone').value), prof = $('#inv-profile').value;
+    if (!name) { $('#inv-err').textContent = 'Informe o nome.'; return; }
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { $('#inv-err').textContent = 'Confira o e-mail.'; return; }
+    if (!/^[0-9]{12,13}$/.test(phone)) { $('#inv-err').textContent = 'Número incompleto. Use DDD + número, ex.: (31) 98215-3370.'; return; }
+    busy($('#inv-confirm'), true, 'Criando convite');
+    let inv;
+    if (DEMO) { inv = { id: 'i' + Date.now(), full_name: name, email, phone, permission_profile_id: prof, token: 'demo' + Date.now(), expires_at: new Date(Date.now() + 7 * 864e5).toISOString() }; curInvites.unshift(inv); cur.invites = curInvites.length; }
+    else { const { data, error } = await sb.rpc('admin_invite_user', { p_company_id: cur.id, p_email: email, p_full_name: name, p_phone: phone, p_permission_profile_id: prof }); if (error) { busy($('#inv-confirm'), false); $('#inv-err').textContent = errMsg(error); return; } inv = Object.assign({ phone, permission_profile_id: prof }, data); await loadCompanyDetail(cur.id); }
+    busy($('#inv-confirm'), false);
+    const link = invLink(inv);
+    $('#inv-form').classList.add('hide'); $('#inv-done').classList.remove('hide'); $('#inv-done-title').textContent = `Convite criado para ${name}`; $('#inv-link').textContent = link;
+    $('#inv-copy').onclick = () => copyText(link); $('#inv-wa').href = `https://wa.me/${phone}?text=${encodeURIComponent(`Olá, ${name.split(' ')[0]}. Seu acesso ao atendimento da ${(cur.company_branding || {}).app_name || cur.name}: ${link}`)}`;
+    $('#inv-confirm').textContent = 'Concluir'; $('#inv-cancel').textContent = 'Fechar';
+    if (DEMO) renderDetail();
+  };
+
+  /* ---------- Instâncias (fase 2) ---------- */
+  const { invoke, relTime } = pz;
+  let instances = [];
+  const ST = { connected: ['ok', 'Conectado'], disconnected: ['bad', 'Desconectado'], awaiting_qr: ['warn', 'Aguardando QR'], draft: ['', 'Rascunho'], error: ['bad', 'Erro'], archived: ['', 'Arquivada'] };
+  const stTxt = i => { const s = ST[i.status] || ['', i.status]; return `<span class="status-txt"><span class="dot ${s[0]}"></span>${s[1]}</span>`; };
+  const provName = p => p === 'zapi' ? 'Z-API' : p === 'meta_cloud' ? 'Meta Cloud' : p;
+  const maskId = v => { v = String(v || ''); return v.length > 8 ? v.slice(0, 4) + '•'.repeat(Math.min(Math.max(v.length - 8, 4), 6)) + v.slice(-4) : (v || 'não informado'); };
+  async function loadInstances() {
+    if (DEMO) { instances = [{ id: 'i1', company_id: 'c1', company_name: 'Aliança Auto Proteção Ltda', app_name: 'Aliança Auto Proteção', primary_color: '#145A3C', slug: 'alianca', provider: 'zapi', status: 'connected', phone_number: '5531982153370', webhook_configured_at: '2026-09-20T12:00:00Z', last_event_at: new Date(Date.now() - 120e3).toISOString(), errors_24h: 0, events_24h: 132, zapi_instance_id_masked: '3E7A••••••••F8', token_fingerprint: 'c2a1', has_client_token: true, has_credentials: true }]; return; }
+    const { data, error } = await sb.rpc('admin_instances');
+    if (error) { toast(errMsg(error), { bad: true }); return; }
+    instances = data || [];
+  }
+  function renderInstances() {
+    const act = instances.filter(i => i.status !== 'archived');
+    const stale = act.filter(i => i.status === 'connected' && (!i.last_event_at || Date.now() - new Date(i.last_event_at).getTime() > 3600e3)).length;
+    const errs = act.filter(i => (i.errors_24h || 0) > 0).length;
+    $('#in-stats').innerHTML = `<div><span class="l">Instâncias</span><span class="v">${act.length}</span></div><div><span class="l">Conectadas</span><span class="v"><span class="dot ok"></span>${act.filter(i => i.status === 'connected').length}</span></div><div><span class="l">Sem evento há mais de 1h</span><span class="v"><span class="dot warn"></span>${stale}</span></div><div><span class="l">Webhook com erro 24h</span><span class="v"><span class="dot bad"></span>${errs}</span></div>`;
+    $('#in-table tbody').innerHTML = act.map(i => `<tr class="clickable ${i.status === 'disconnected' || i.status === 'error' || (i.errors_24h || 0) > 0 ? 'problem' : ''}" data-id="${esc(i.id)}">
+      <td><span class="company-cell"><span class="logo" style="background:${esc(i.primary_color || '#2b2b29')};color:${inkFor(i.primary_color || '#2b2b29')}">${esc((i.app_name || i.company_name || 'E')[0].toUpperCase())}</span><span><span class="n">${esc(i.app_name || i.company_name)}</span><span class="s">${esc(i.slug)}</span></span></span></td>
+      <td><span class="chip">${esc(provName(i.provider))}</span></td>
+      <td class="mono">${esc(i.phone_number ? fmtPhone(i.phone_number) : 'sem número')}</td>
+      <td>${stTxt(i)}</td>
+      <td>${i.webhook_configured_at ? `<span class="chip ok">configurado</span>` : `<span class="chip warn">não configurado</span>`}</td>
+      <td>${esc(i.last_event_at ? relTime(i.last_event_at) : 'nunca')}</td>
+      <td class="r mono">${i.errors_24h || 0}${i.events_24h ? `<span class="muted"> / ${i.events_24h}</span>` : ''}</td>
+      <td>${i.has_credentials ? (i.provider === 'meta_cloud' ? `<span class="cred">PNID ${esc(maskId(i.meta_phone_number_id))} · token ••••${esc(i.token_fingerprint || '')}${i.has_app_secret ? ' · secret' : ''}</span><span class="sub">${i.templates_approved || 0} de ${i.templates_count || 0} modelos aprovados</span>` : `<span class="cred">${esc(i.zapi_instance_id_masked || '')} · token ••••${esc(i.token_fingerprint || '')}${i.has_client_token ? ' · CT' : ''}</span>`) : '<span class="chip bad">sem credenciais</span>'}</td>
+      <td><span class="rowbtns"><button class="btn sm" type="button" data-open-inst="${esc(i.id)}">Abrir</button></span></td></tr>`).join('');
+    $('#in-empty').classList.toggle('hide', !!act.length);
+    if (!act.length) $('#in-empty').innerHTML = `<div class="empty-inline" style="margin:12px 0"><b>Nenhuma instância. Ela é criada na aba WhatsApp da empresa.</b><a class="btn" href="#/empresas">Ir para Empresas</a></div>`;
+    /* Saúde */
+    const signals = [];
+    act.forEach(i => {
+      const name = i.app_name || i.company_name;
+      if (i.status === 'disconnected' || i.status === 'error') signals.push([i.id, 'bad', name, i.status === 'error' ? 'Erro: ' + (i.last_error || '') : 'WhatsApp desconectado' + (i.last_error ? ' · ' + i.last_error : ''), i.updated_at]);
+      if (i.status === 'connected' && (!i.last_event_at || Date.now() - new Date(i.last_event_at).getTime() > 3600e3)) signals.push([i.id, 'warn', name, 'Sem evento há mais de 1 hora', i.last_event_at]);
+      if ((i.errors_24h || 0) > 0) signals.push([i.id, 'bad', name, `${i.errors_24h} evento(s) de webhook com erro nas últimas 24 h`, i.last_webhook_at]);
+      if (!i.webhook_configured_at) signals.push([i.id, 'warn', name, i.provider === 'meta_cloud' ? 'Webhook da Meta ainda não verificado (cole URL e verify token no app)' : 'Webhooks da Z-API não configurados', i.created_at]);
+      if (i.provider === 'meta_cloud' && !(i.templates_approved > 0)) signals.push([i.id, 'warn', name, 'Nenhum modelo aprovado sincronizado: fora da janela de 24 h ninguém consegue enviar', i.config && i.config.templates_synced_at || i.created_at]);
+      if (i.provider !== 'meta_cloud' && (i.status === 'awaiting_qr' || i.status === 'draft')) signals.push([i.id, 'warn', name, 'Aguardando leitura do QR', i.updated_at]);
+    });
+    $('#sa-stats').innerHTML = $('#in-stats').innerHTML;
+    $('#sa-list').innerHTML = signals.length ? signals.map(([id, cls, name, txt, at]) => `<div class="ev"><span class="t">${esc(at ? relTime(at) : '')}</span><span class="ty"><span class="dot ${cls}"></span></span><span class="d"><b>${esc(name)}</b> · ${esc(txt)}</span><button class="btn sm" type="button" data-open-inst="${esc(id)}">Instância</button></div>`).join('') : '<div class="empty-inline"><b>Tudo em ordem.</b><span>Sem instâncias desconectadas, sem webhook com erro e sem silêncio maior que 1 hora.</span></div>';
+  }
+  $('#in-refresh').onclick = async () => { await loadInstances(); renderInstances(); toast('Atualizado.'); };
+  document.addEventListener('click', e => { const b = e.target.closest('[data-open-inst]'); if (b) { openInst(b.dataset.openInst); return; } const tr = e.target.closest('#in-table tr[data-id]'); if (tr && !e.target.closest('button')) openInst(tr.dataset.id); });
+
+  /* Drawer da instância */
+  let curInst = null, instLog = [], qrTimer = null, qrCount = 0, qrPoll = null;
+  async function openInst(id) {
+    curInst = instances.find(i => i.id === id); if (!curInst) return;
+    $('#di-logo').style.background = curInst.primary_color || '#2b2b29'; $('#di-logo').style.color = inkFor(curInst.primary_color || '#2b2b29'); $('#di-logo').textContent = (curInst.app_name || curInst.company_name || 'E')[0].toUpperCase();
+    $('#di-title').textContent = `${curInst.app_name || curInst.company_name} · ${provName(curInst.provider)}`;
+    renderInstBody(); $('#dr-inst').classList.add('open');
+    if (!DEMO) { try { const r = await invoke(sb, 'instance-admin', { action: 'log', instance_id: id, limit: 50 }); instLog = r.events || []; } catch (e) { instLog = []; } renderInstBody(); }
+  }
+  function renderInstBody() {
+    const i = curInst; if (!i) return;
+    const isMeta = i.provider === 'meta_cloud';
+    const webhookMasked = isMeta ? `${pz.PZ.SUPABASE_URL}/functions/v1/meta-webhook?i=${i.id}` : `${pz.PZ.SUPABASE_URL}/functions/v1/zapi-webhook?i=${i.id}&k=••••••••`;
+    $('#di-body').innerHTML = `
+      <div class="stat-mini"><div><span class="l">Status</span><span class="v" style="font-size:14px">${stTxt(i)}</span></div><div><span class="l">Último evento</span><span class="v" style="font-size:14px">${esc(i.last_event_at ? relTime(i.last_event_at) : 'nunca')}</span></div><div><span class="l">Eventos 24h</span><span class="v">${i.events_24h || 0}</span></div><div><span class="l">Erros 24h</span><span class="v">${i.errors_24h || 0}</span></div></div>
+      ${i.last_error ? `<div class="banner bad" style="margin:0">${ico('i-alert', 'ic')}<span>${esc(i.last_error)}</span></div>` : ''}
+      <div class="card"><div class="card-h"><h2>Credenciais</h2><span class="sub">mascaradas; os valores ficam no cofre</span></div><div class="card-b">
+        <dl class="kv" style="grid-template-columns:120px 1fr">
+          <dt>Número</dt><dd class="num">${esc(i.phone_number ? fmtPhone(i.phone_number) : 'sem número')}${i.display_name ? ` · ${esc(i.display_name)}` : ''}${i.device_model ? ` <span class="muted">(${esc(i.device_model)})</span>` : ''}</dd>
+          ${isMeta ? `<dt>Phone number ID</dt><dd><span class="cred">${esc(maskId(i.meta_phone_number_id))}</span></dd>
+          <dt>WABA ID</dt><dd><span class="cred">${esc(i.meta_waba_id ? maskId(i.meta_waba_id) : 'não informado (sem sync de modelos)')}</span></dd>
+          <dt>Access token</dt><dd><span class="cred">••••••••••••••••••••${esc(i.token_fingerprint || '')}</span></dd>
+          <dt>App Secret</dt><dd><span class="cred">${i.has_app_secret ? '•••••••••••• (gravado)' : '<span class="chip bad">ausente</span>'}</span></dd>
+          <dt>Modelos</dt><dd>${i.templates_approved || 0} aprovado(s) de ${i.templates_count || 0}${i.config && i.config.templates_synced_at ? ` <span class="muted">· sincronizado ${esc(relTime(i.config.templates_synced_at))}</span>` : ''}${i.config && i.config.templates_sync_error ? ` <span style="color:var(--bad-text)">· última sincronização falhou</span>` : ''}</dd>` : `<dt>Instance ID</dt><dd><span class="cred">${esc(i.zapi_instance_id_masked || 'não informado')}</span></dd>
+          <dt>Token</dt><dd><span class="cred">••••••••••••••••••••${esc(i.token_fingerprint || '')}</span></dd>
+          <dt>Client-Token</dt><dd><span class="cred">${i.has_client_token ? '•••••••••••• (gravado)' : 'não informado'}</span></dd>`}
+          <dt>Webhook</dt><dd><span class="cred" style="word-break:break-all">${esc(webhookMasked)}</span><div class="muted" style="font-size:11px;margin-top:4px">${isMeta ? (i.webhook_configured_at ? 'Verificado pela Meta em ' + esc(pz.dt(i.webhook_configured_at)) : 'Ainda não verificado pela Meta: cole a URL e o verify token no app') : (i.webhook_configured_at ? 'Configurado na Z-API em ' + esc(pz.dt(i.webhook_configured_at)) : 'Ainda não configurado na Z-API')}${i.rotated_at ? ' · segredo trocado em ' + esc(pz.dt(i.rotated_at)) : ''}</div></dd>
+        </dl>
+        <div class="inst-actions" style="margin-top:12px">
+          ${isMeta ? `<button class="btn primary" type="button" data-act="status">${ico('i-refresh', 'ic ic-sm')}Status do número</button>
+          <button class="btn" type="button" data-act="sync-templates">${ico('i-repeat', 'ic ic-sm')}Sincronizar modelos</button>
+          <button class="btn" type="button" data-act="meta-setup">${ico('i-link', 'ic ic-sm')}Configuração Meta</button>
+          <button class="btn" type="button" data-act="test-webhook">${ico('i-activity', 'ic ic-sm')}Testar webhook</button>
+          <button class="btn" type="button" data-act="device">${ico('i-smart', 'ic ic-sm')}Dados do número</button>` : `<button class="btn primary" type="button" data-act="qr">${ico('i-qr', 'ic ic-sm')}Conectar / QR</button>
+          <button class="btn" type="button" data-act="status">${ico('i-refresh', 'ic ic-sm')}Status</button>
+          <button class="btn" type="button" data-act="configure-webhooks">${ico('i-link', 'ic ic-sm')}Configurar webhooks</button>
+          <button class="btn" type="button" data-act="test-webhook">${ico('i-activity', 'ic ic-sm')}Testar webhook</button>
+          <button class="btn" type="button" data-act="device">${ico('i-smart', 'ic ic-sm')}Aparelho</button>
+          <button class="btn" type="button" data-act="rotate-secret">${ico('i-key', 'ic ic-sm')}Trocar segredo</button>
+          <button class="btn" type="button" data-act="restart">${ico('i-power', 'ic ic-sm')}Reiniciar</button>
+          <button class="btn danger" type="button" data-act="disconnect">${ico('i-wifi-off', 'ic ic-sm')}Desconectar</button>`}
+          <a class="btn" href="#/empresa?id=${esc(i.company_id)}&aba=whatsapp">${ico('i-pencil', 'ic ic-sm')}Trocar credenciais</a>
+        </div>
+        <div class="err" id="di-result" role="status" style="color:var(--ink-2);margin-top:8px;white-space:pre-wrap"></div>
+      </div></div>
+      <div class="card"><div class="card-h"><h2>Últimos eventos</h2><div class="tools"><div class="segmented" id="di-logf"><button type="button" data-lf="" aria-pressed="true">Todos</button><button type="button" data-lf="ReceivedCallback" aria-pressed="false">Recebido</button><button type="button" data-lf="status" aria-pressed="false">Status</button><button type="button" data-lf="failed" aria-pressed="false">Erro</button></div></div></div><div class="card-b"><div class="log" id="di-log"></div></div></div>`;
+    renderInstLog('');
+    $$('#di-body [data-act]').forEach(b => b.onclick = () => instAction(b.dataset.act, b));
+    $$('#di-logf button').forEach(b => b.onclick = () => { $$('#di-logf button').forEach(x => x.setAttribute('aria-pressed', 'false')); b.setAttribute('aria-pressed', 'true'); renderInstLog(b.dataset.lf); });
+  }
+  function renderInstLog(f) {
+    const rows = instLog.filter(e => !f || (f === 'failed' ? e.status === 'failed' : f === 'status' ? /Status|Delivery|^status/.test(e.event_type) : (e.event_type === f || (f === 'ReceivedCallback' && /^message/.test(e.event_type)))));
+    $('#di-log').innerHTML = rows.length ? rows.map(e => { const p = e.payload || {}; const d = p.text || (p.media ? p.media : p.status ? String(p.status) : p.error ? p.error : p.connected != null ? (p.connected ? 'conectado' : 'desconectado') : ''); return `<div class="ev"><span class="t">${esc(fmtTimeShort(e.received_at))}</span><span class="ty">${esc(e.event_type)}</span><span class="d">${p.phone ? esc(fmtPhone(String(p.phone))) + ' · ' : ''}${esc(d || '')}${e.error_text ? ` · <span style="color:var(--bad-text)">${esc(e.error_text)}</span>` : ''}</span><span class="chip ${e.status === 'processed' ? 'ok' : e.status === 'failed' ? 'bad' : e.status === 'ignored' ? '' : 'warn'}">${esc(e.status)}</span></div>`; }).join('') : '<div class="empty-inline"><b>Nenhum evento ainda.</b><span>Use Testar webhook para injetar um evento sintético.</span></div>';
+  }
+  const fmtTimeShort = iso => iso ? new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
+  $('#di-log-more').onclick = async () => { if (!curInst || DEMO) return; try { const r = await invoke(sb, 'instance-admin', { action: 'log', instance_id: curInst.id, limit: 200 }); instLog = r.events || []; renderInstLog(''); toast(`${instLog.length} eventos carregados.`); } catch (e) { toast(e.message, { bad: true }); } };
+  async function instAction(action, btn) {
+    if (!curInst) return; if (DEMO) return toast('Modo demonstração.');
+    const out = $('#di-result'); if (out) out.textContent = '';
+    if (action === 'qr') return openQr();
+    if (action === 'disconnect' && !(await confirmModal({ title: 'Desconectar WhatsApp', text: `A ${curInst.app_name || curInst.company_name} para de receber e enviar até reconectar pelo QR.`, ok: 'Desconectar', danger: true }))) return;
+    if (action === 'rotate-secret' && !(await confirmModal({ title: 'Trocar segredo do webhook', text: 'A URL antiga deixa de funcionar na hora. Os webhooks da Z-API são reconfigurados com a nova URL.', ok: 'Trocar segredo', danger: true }))) return;
+    busy(btn, true, 'Aguarde');
+    try {
+      const r = await invoke(sb, 'instance-admin', { action, instance_id: curInst.id });
+      let txt = '';
+      if (action === 'status') txt = r.status && r.status.connected ? `Conectado${r.status.phone_number ? ' · ' + fmtPhone(r.status.phone_number) : ''}` : `Não conectado${r.status && r.status.error ? ' · ' + r.status.error : ''}`;
+      else if (action === 'test-webhook') txt = r.ok ? `Webhook ok · HTTP ${r.http_status} em ${r.latency_ms} ms · evento ${r.event ? r.event.status : '?'} gravado em webhook_events` : `Falhou · HTTP ${r.http_status}${r.event ? '' : ' · evento não gravado'}`;
+      else if (action === 'configure-webhooks') txt = 'Webhooks configurados na Z-API (todos para a mesma URL, notifySentByMe ligado).';
+      else if (action === 'device') txt = r.device && r.device.phone ? `Aparelho: ${fmtPhone(r.device.phone)} · ${r.device.name || ''} · ${r.device.deviceModel || ''}` : 'A Z-API não devolveu o aparelho' + (r.device && r.device.error ? ': ' + r.device.error : '.');
+      else if (action === 'rotate-secret') { txt = 'Segredo trocado.' + (r.webhook_error ? ' Reconfigurar webhooks falhou: ' + r.webhook_error : ' Webhooks reconfigurados.'); showSecretOnce(r.webhook_url); }
+      else if (action === 'disconnect') txt = 'Desconectado.';
+      else if (action === 'restart') txt = 'Reinício pedido à Z-API.';
+      else if (action === 'sync-templates') txt = `${r.count} modelo(s) lido(s) da conta Meta · ${r.approved == null ? '' : r.approved + ' aprovado(s)'}${r.names && r.names.length ? '\n' + r.names.join(', ') : ''}`;
+      else if (action === 'meta-setup') { txt = `Configuração do app da Meta${r.has_app_secret ? '' : ' (App Secret ausente: o webhook recusa tudo)'}`; showMetaSetup(r); }
+      if (out) out.textContent = txt; toast(txt.split(' · ')[0]);
+    } catch (e) { if (out) out.textContent = e.message; toast(e.message, { bad: true }); }
+    busy(btn, false);
+    await loadInstances(); renderInstances(); curInst = instances.find(i => i.id === curInst.id) || curInst;
+    try { const r = await invoke(sb, 'instance-admin', { action: 'log', instance_id: curInst.id, limit: 50 }); instLog = r.events || []; } catch (e) { /* mantém */ }
+    const keep = out ? out.textContent : ''; renderInstBody(); if (keep) $('#di-result').textContent = keep;
+  }
+  function showMetaSetup(r) {
+    $('#di-result').innerHTML = `Cole no app da Meta (Painel de apps › WhatsApp › Configuração › Webhook):<br><b>URL de callback</b><br><span class="cred" style="word-break:break-all">${esc(r.webhook_url)}</span> <button class="btn sm" type="button" id="di-copy-url">Copiar</button><br><b>Verify token</b><br><span class="cred" style="word-break:break-all">${esc(r.verify_token || '')}</span> <button class="btn sm" type="button" id="di-copy-vt">Copiar</button><br><span class="muted">Assine o campo <b>messages</b>. Phone number ID ${esc(r.phone_number_id || '')}${r.waba_id ? ' · WABA ' + esc(r.waba_id) : ''} · Graph ${esc(r.graph_version || '')}.</span>`;
+    $('#di-copy-url').onclick = () => copyText(r.webhook_url); $('#di-copy-vt').onclick = () => copyText(r.verify_token || '');
+  }
+  function showSecretOnce(url) { if (!url) return; $('#di-result').innerHTML = `Nova URL do webhook (o segredo só aparece agora):<br><span class="cred" style="word-break:break-all">${esc(url)}</span> <button class="btn sm" type="button" id="di-copy-url">Copiar</button>`; $('#di-copy-url').onclick = () => copyText(url); }
+  /* QR com contagem regressiva e renovação */
+  async function openQr() {
+    openModal('m-qr'); await fetchQr();
+  }
+  async function fetchQr() {
+    clearInterval(qrTimer); clearInterval(qrPoll);
+    $('#qr-box').innerHTML = '<span class="muted">Gerando QR</span>';
+    try {
+      const r = await invoke(sb, 'instance-admin', { action: 'qr', instance_id: curInst.id });
+      if (r.connected) { $('#qr-box').innerHTML = `<b>WhatsApp já conectado.</b>`; await loadInstances(); renderInstances(); curInst = instances.find(i => i.id === curInst.id) || curInst; renderInstBody(); return; }
+      if (r.challenge) { $('#qr-box').innerHTML = `<b>Este aparelho pede chave de acesso (passkey).</b><span class="muted" style="font-size:12px">A Z-API devolveu um desafio WebAuthn. Use o código de pareamento pelo painel da Z-API ou desative a chave de acesso no WhatsApp.</span>`; return; }
+      if (!r.base64) { $('#qr-box').innerHTML = `<b>A Z-API não devolveu o QR.</b><span class="muted" style="font-size:12px">Confira as credenciais ou tente Reiniciar.</span>`; return; }
+      const src = String(r.base64).startsWith('data:') ? r.base64 : 'data:image/png;base64,' + r.base64;
+      qrCount = r.expires_in || 20;
+      $('#qr-box').innerHTML = `<img src="${esc(src)}" alt="QR code para conectar o WhatsApp"><span class="count" id="qr-count">Expira em ${qrCount} s</span>`;
+      qrTimer = setInterval(() => { qrCount--; const c = $('#qr-count'); if (c) c.textContent = qrCount > 0 ? `Expira em ${qrCount} s` : 'QR expirado. Gerando novo'; if (qrCount <= 0) { clearInterval(qrTimer); if ($('#m-qr').classList.contains('open')) fetchQr(); } }, 1000);
+      qrPoll = setInterval(async () => { if (!$('#m-qr').classList.contains('open')) { clearInterval(qrPoll); clearInterval(qrTimer); return; } try { const s = await invoke(sb, 'instance-admin', { action: 'status', instance_id: curInst.id }); if (s.status && s.status.connected) { clearInterval(qrPoll); clearInterval(qrTimer); $('#qr-box').innerHTML = `<b>Conectado${s.status.phone_number ? ' · ' + esc(fmtPhone(s.status.phone_number)) : ''}</b>`; toast('WhatsApp conectado.'); await loadInstances(); renderInstances(); curInst = instances.find(i => i.id === curInst.id) || curInst; renderInstBody(); } } catch (e) { /* segue */ } }, 5000);
+    } catch (e) { $('#qr-box').innerHTML = `<b>Não deu para gerar o QR.</b><span class="muted" style="font-size:12px">${esc(e.message)}</span>`; }
+  }
+  $('#qr-new').onclick = fetchQr;
+  $('#m-qr').addEventListener('click', e => { if (e.target.closest('[data-close]') || e.target === $('#m-qr')) { clearInterval(qrTimer); clearInterval(qrPoll); } });
+
+  /* Aba WhatsApp da empresa: Z-API ou Meta Cloud API */
+  maskPhoneInput($('#ce-wa-phone')); maskPhoneInput($('#ce-wa-mphone'));
+  $$('[data-toggle-pw]').forEach(b => b.onclick = () => { const i = $('#' + b.dataset.togglePw); i.type = i.type === 'password' ? 'text' : 'password'; });
+  let ceProv = 'zapi';
+  function setCeProv(p, existing) {
+    ceProv = p === 'meta_cloud' ? 'meta_cloud' : 'zapi';
+    $$('#ce-wa-prov button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.prov === ceProv)));
+    $('#ce-wa-meta').classList.toggle('hide', ceProv !== 'meta_cloud'); $('#ce-wa-zapi').classList.toggle('hide', ceProv === 'meta_cloud');
+    $('#ce-wa-foot').textContent = ceProv === 'meta_cloud' ? 'Ao salvar, o painel grava no cofre, gera o verify token, confere o número na Graph API e sincroniza os modelos aprovados. O webhook você cola no app da Meta.' : 'Ao salvar, o painel configura todos os webhooks da Z-API sozinho (com notifySentByMe).';
+    $('#ce-wa-save').textContent = existing ? (ceProv === 'meta_cloud' ? 'Substituir credenciais da Meta' : 'Substituir credenciais e reconfigurar webhooks') : (ceProv === 'meta_cloud' ? 'Salvar e conferir número' : 'Salvar e configurar webhooks');
+    $('#ce-wa-err').textContent = '';
+  }
+  $$('#ce-wa-prov button').forEach(b => b.onclick = () => setCeProv(b.dataset.prov, !!instances.find(x => x.company_id === cur.id && x.status !== 'archived')));
+  function renderCompanyWa() {
+    const i = instances.find(x => x.company_id === cur.id && x.status !== 'archived');
+    const box = $('#ce-wa-current');
+    if (!i) { box.innerHTML = `<div class="card-b"><div class="empty-inline"><b>Esta empresa ainda não tem WhatsApp.</b><span>Escolha o provedor: Z-API (instance id, token e client token; conexão por QR) ou Meta Cloud API (phone number id, WABA id, access token permanente e app secret; número oficial). O painel grava no cofre.</span></div></div>`; $('#ce-wa-form-title').textContent = 'Conectar WhatsApp'; setCeProv(ceProv, false); }
+    else {
+      const isMeta = i.provider === 'meta_cloud';
+      box.innerHTML = `<div class="card-h"><h2>Instância atual</h2><span class="sub">${esc(provName(i.provider))}</span></div><div class="card-b"><dl class="kv" style="grid-template-columns:130px 1fr"><dt>Status</dt><dd>${stTxt(i)}</dd><dt>Número</dt><dd class="num">${esc(i.phone_number ? fmtPhone(i.phone_number) : (isMeta ? 'sem número (a Meta informa no Status)' : 'sem número (aparece ao conectar)'))}</dd>${isMeta ? `<dt>Phone number ID</dt><dd><span class="cred">${esc(maskId(i.meta_phone_number_id))}</span></dd><dt>WABA ID</dt><dd><span class="cred">${esc(i.meta_waba_id ? maskId(i.meta_waba_id) : 'não informado')}</span></dd><dt>Modelos</dt><dd>${i.templates_approved || 0} aprovado(s) de ${i.templates_count || 0}</dd>` : `<dt>Instance ID</dt><dd><span class="cred">${esc(i.zapi_instance_id_masked || '')}</span></dd>`}<dt>Webhook</dt><dd>${i.webhook_configured_at ? `<span class="chip ok">${isMeta ? 'verificado pela Meta' : 'configurado'}</span>` : `<span class="chip warn">${isMeta ? 'não verificado' : 'não configurado'}</span>`}</dd><dt>Último evento</dt><dd>${esc(i.last_event_at ? relTime(i.last_event_at) : 'nunca')}</dd></dl>
+        <div class="inst-actions" style="margin-top:12px">${isMeta ? `<button class="btn primary" type="button" id="ce-wa-status">${ico('i-refresh', 'ic ic-sm')}Status do número</button><button class="btn" type="button" id="ce-wa-sync">${ico('i-repeat', 'ic ic-sm')}Sincronizar modelos</button><button class="btn" type="button" id="ce-wa-setup">${ico('i-link', 'ic ic-sm')}Configuração Meta</button>` : `<button class="btn primary" type="button" id="ce-wa-qr">${ico('i-qr', 'ic ic-sm')}Conectar / QR</button>`}<button class="btn" type="button" id="ce-wa-open">${ico('i-plug', 'ic ic-sm')}Abrir instância</button></div>
+        <div class="err" id="ce-wa-result" role="status" style="color:var(--ink-2);margin-top:8px;white-space:pre-wrap"></div></div>`;
+      const qr = $('#ce-wa-qr'); if (qr) qr.onclick = () => { curInst = i; openQr(); };
+      $('#ce-wa-open').onclick = () => openInst(i.id);
+      const run = async (action, btn) => { if (DEMO) return toast('Modo demonstração.'); busy(btn, true, 'Aguarde'); try { const r = await invoke(sb, 'instance-admin', { action, instance_id: i.id }); let txt = ''; if (action === 'status') txt = r.status && r.status.connected ? `Número ativo na Meta${r.status.phone_number ? ' · ' + fmtPhone(r.status.phone_number) : ''}` : `Número não respondeu · ${r.status && r.status.error || ''}`; else if (action === 'sync-templates') txt = `${r.count} modelo(s) lido(s) · ${r.approved == null ? '' : r.approved + ' aprovado(s)'}`; else if (action === 'meta-setup') { $('#ce-wa-done').classList.remove('hide'); $('#ce-wa-done-title').textContent = 'Cole no app da Meta (Webhook › URL de callback e Verificar token)'; $('#ce-wa-url').textContent = r.webhook_url; $('#ce-wa-copy').onclick = () => copyText(r.webhook_url); $('#ce-wa-vt-row').classList.remove('hide'); $('#ce-wa-vt').textContent = r.verify_token || ''; $('#ce-wa-copy-vt').classList.remove('hide'); $('#ce-wa-copy-vt').onclick = () => copyText(r.verify_token || ''); $('#ce-wa-done-note').textContent = 'Assine o campo messages. Depois, mande uma mensagem de teste para o número e confira em Instâncias.'; txt = 'URL e verify token abaixo.'; } $('#ce-wa-result').textContent = txt; toast(txt.split(' · ')[0]); await loadInstances(); renderInstances(); } catch (e) { $('#ce-wa-result').textContent = e.message; toast(e.message, { bad: true }); } busy(btn, false); };
+      const st = $('#ce-wa-status'); if (st) st.onclick = () => run('status', st);
+      const sy = $('#ce-wa-sync'); if (sy) sy.onclick = () => run('sync-templates', sy);
+      const su = $('#ce-wa-setup'); if (su) su.onclick = () => run('meta-setup', su);
+      $('#ce-wa-form-title').textContent = 'Trocar credenciais'; setCeProv(i.provider, true);
+    }
+    $('#ce-wa-done').classList.add('hide'); $('#ce-wa-vt-row').classList.add('hide'); $('#ce-wa-copy-vt').classList.add('hide'); $('#ce-wa-err').textContent = '';
+    $('#ce-wa-iid').value = ''; $('#ce-wa-token').value = ''; $('#ce-wa-ct').value = ''; $('#ce-wa-phone').value = i && i.phone_number ? fmtPhone(i.phone_number) : '';
+    $('#ce-wa-pnid').value = ''; $('#ce-wa-waba').value = ''; $('#ce-wa-mtoken').value = ''; $('#ce-wa-msecret').value = ''; $('#ce-wa-mphone').value = i && i.phone_number ? fmtPhone(i.phone_number) : ''; $('#ce-wa-vtoken').value = 'gerado pelo sistema ao salvar';
+  }
+  $('#ce-wa-save').onclick = async () => {
+    $('#ce-wa-err').textContent = '';
+    const existing = instances.find(x => x.company_id === cur.id && x.status !== 'archived');
+    let payload;
+    if (ceProv === 'meta_cloud') {
+      const pnid = $('#ce-wa-pnid').value.trim(), waba = $('#ce-wa-waba').value.trim(), mtoken = $('#ce-wa-mtoken').value.trim(), msecret = $('#ce-wa-msecret').value.trim(), phone = phoneDigits($('#ce-wa-mphone').value);
+      if (!/^[0-9]{5,30}$/.test(pnid)) { $('#ce-wa-err').textContent = 'Informe o Phone number ID (só números).'; return; }
+      if (waba && !/^[0-9]{5,30}$/.test(waba)) { $('#ce-wa-err').textContent = 'WABA ID só com números.'; return; }
+      if (!mtoken) { $('#ce-wa-err').textContent = 'Informe o access token permanente.'; return; }
+      if (!msecret) { $('#ce-wa-err').textContent = 'Informe o App Secret: sem ele a assinatura do webhook não pode ser conferida.'; return; }
+      if (phone && !/^[0-9]{12,13}$/.test(phone)) { $('#ce-wa-err').textContent = 'Número incompleto. Use DDD + número.'; return; }
+      payload = { action: 'create', company_id: cur.id, provider: 'meta_cloud', meta_phone_number_id: pnid, meta_waba_id: waba || null, meta_access_token: mtoken, meta_app_secret: msecret, phone: phone || null };
+    } else {
+      const iid = $('#ce-wa-iid').value.trim(), token = $('#ce-wa-token').value.trim(), ct = $('#ce-wa-ct').value.trim(), phone = phoneDigits($('#ce-wa-phone').value);
+      if (!iid) { $('#ce-wa-err').textContent = 'Informe o instance id da Z-API.'; return; }
+      if (!token) { $('#ce-wa-err').textContent = 'Informe o token da instância.'; return; }
+      if (phone && !/^[0-9]{12,13}$/.test(phone)) { $('#ce-wa-err').textContent = 'Número incompleto. Use DDD + número.'; return; }
+      payload = { action: 'create', company_id: cur.id, provider: 'zapi', zapi_instance_id: iid, zapi_token: token, zapi_client_token: ct || null, phone: phone || null };
+    }
+    if (DEMO) return toast('Modo demonstração.');
+    if (existing && !(await confirmModal({ title: existing.provider !== ceProv ? 'Trocar de provedor' : 'Substituir credenciais', text: existing.provider !== ceProv ? `A instância passa de ${provName(existing.provider)} para ${provName(ceProv)}. As conversas continuam; as credenciais antigas são apagadas do cofre.` : 'As credenciais antigas são apagadas do cofre' + (ceProv === 'zapi' ? ' e os webhooks reconfigurados. O segredo do webhook continua o mesmo.' : '. O verify token é gerado de novo: atualize no app da Meta.'), ok: 'Substituir' }))) return;
+    busy($('#ce-wa-save'), true, ceProv === 'meta_cloud' ? 'Gravando e conferindo na Meta' : 'Gravando no cofre e configurando');
+    try {
+      const r = await invoke(sb, 'instance-admin', payload);
+      $('#ce-wa-done').classList.remove('hide'); $('#ce-wa-url').textContent = r.webhook_url; $('#ce-wa-copy').onclick = () => copyText(r.webhook_url);
+      if (r.provider === 'meta_cloud') {
+        $('#ce-wa-done-title').textContent = 'Cole no app da Meta (Webhook › URL de callback e Verificar token)';
+        $('#ce-wa-vt-row').classList.remove('hide'); $('#ce-wa-vt').textContent = r.verify_token || ''; $('#ce-wa-copy-vt').classList.remove('hide'); $('#ce-wa-copy-vt').onclick = () => copyText(r.verify_token || ''); $('#ce-wa-vtoken').value = r.verify_token || '';
+        const st = r.status && r.status.connected ? 'Número ativo na Graph API.' : `A Meta não confirmou o número${r.status && r.status.error ? ': ' + r.status.error : ''}.`;
+        const tp = r.templates_error ? ` Modelos não sincronizados: ${r.templates_error}` : (r.templates ? ` ${r.templates.count} modelo(s), ${r.templates.approved == null ? '' : r.templates.approved + ' aprovado(s)'}.` : '');
+        $('#ce-wa-done-note').textContent = `${st}${tp}${r.plan_allows_meta === false ? ' Aviso: o plano desta empresa não inclui Meta Cloud (features.meta_cloud).' : ''} Assine o campo messages no app e mande uma mensagem de teste.`;
+        toast(r.status && r.status.connected ? 'Credenciais gravadas. Número ativo na Meta.' : 'Credenciais gravadas, mas a Meta não confirmou o número.', { bad: !(r.status && r.status.connected) });
+      } else {
+        $('#ce-wa-done-title').textContent = 'URL do webhook (o segredo só aparece agora)';
+        $('#ce-wa-done-note').textContent = (r.webhook_error ? 'A Z-API não aceitou a configuração dos webhooks: ' + r.webhook_error + ' Confira as credenciais e use Configurar webhooks na instância.' : 'Webhooks configurados na Z-API.') + (r.status && r.status.connected ? ' WhatsApp já conectado.' : ' Agora clique em Conectar / QR e leia no celular da empresa.');
+        toast(r.webhook_error ? 'Credenciais gravadas, mas a Z-API recusou os webhooks.' : 'Credenciais gravadas e webhooks configurados.', { bad: !!r.webhook_error });
+      }
+      const keepDone = $('#ce-wa-done').innerHTML;
+      await loadInstances(); renderInstances(); renderCompanyWa(); $('#ce-wa-done').innerHTML = keepDone; $('#ce-wa-done').classList.remove('hide');
+      $('#ce-wa-copy').onclick = () => copyText(r.webhook_url); const cvt = $('#ce-wa-copy-vt'); if (cvt && r.verify_token) cvt.onclick = () => copyText(r.verify_token);
+    } catch (e) { $('#ce-wa-err').textContent = e.message; }
+    busy($('#ce-wa-save'), false);
+  };
+  /* ---------- rotas ---------- */
+  /* Saúde: cartão do cron (cron_runs alimentada pelo sla-monitor + cron.job) */
+  async function loadCronHealth() {
+    const kv = $('#sa-cron-kv'), lg = $('#sa-cron-log'), chip = $('#sa-cron-chip');
+    if (DEMO) { chip.textContent = 'demonstração'; kv.innerHTML = ''; return; }
+    const { data: h, error } = await sb.rpc('admin_cron_health');
+    if (error || !h) { chip.textContent = 'erro'; chip.className = 'chip bad'; kv.innerHTML = `<div><span class="l">Falha ao carregar</span><span class="v" style="font-size:12px">${esc(error ? errMsg(error) : '')}</span></div>`; return; }
+    const last = h.last_run; const ageMin = last ? (Date.now() - new Date(last.started_at).getTime()) / 60000 : null;
+    const state = !h.job || !h.job.active ? ['bad', 'cron não agendado'] : !last ? ['warn', 'ainda não rodou'] : ageMin > 5 ? ['bad', `sem execução há ${Math.round(ageMin)} min`] : last.ok === false ? ['warn', 'última com erro'] : ['ok', 'rodando'];
+    chip.textContent = state[1]; chip.className = 'chip ' + state[0];
+    kv.innerHTML = [
+      ['Última execução', last ? relTime(last.started_at) : 'nunca'],
+      ['Duração', last && last.duration_ms != null ? last.duration_ms + ' ms' : (last ? 'em curso' : '')],
+      ['Média 24 h', h.avg_duration_ms != null ? h.avg_duration_ms + ' ms' : ''],
+      ['Execuções 24 h', String(h.runs_24h || 0)],
+      ['Com erro 24 h', String(h.errors_24h || 0)],
+      ['Fila de envios', String((h.queue && h.queue.queued) || 0)],
+      ['Enviados 24 h', String((h.queue && h.queue.sent_24h) || 0)],
+      ['Falhas de envio 24 h', String((h.queue && h.queue.failed_24h) || 0)]
+    ].map(([l, v]) => `<div><span class="l">${esc(l)}</span><span class="v mono">${esc(v)}</span></div>`).join('');
+    lg.innerHTML = (h.recent || []).map(r => `<div class="ev"><span class="t">${esc(fmtTimeShort(r.started_at))}</span><span class="ty"><span class="dot ${r.ok === true ? 'ok' : r.ok === false ? 'bad' : 'warn'}"></span></span><span class="d">${esc(r.source)} · ${r.companies ?? 0} empresa(s) · ${r.duration_ms != null ? r.duration_ms + ' ms' : 'em curso'}${r.error_text ? ` · <b>${esc(r.error_text.slice(0, 160))}</b>` : ''}${r.summary && r.summary.sends ? ` · envios ${r.summary.sends.sent || 0} ok, ${r.summary.sends.failed || 0} falhas, ${r.summary.sends.skipped || 0} puladas` : ''}</span></div>`).join('') || '<div class="empty-inline"><b>Nenhuma execução registrada.</b></div>';
+    $('#sa-cron-foot').textContent = `Job pg_cron: ${h.job ? `${h.job.jobname} · ${h.job.schedule} · ${h.job.active ? 'ativo' : 'inativo'}` : 'não encontrado'}${h.job_last ? ` · último disparo ${relTime(h.job_last.start_time)} (${h.job_last.status})` : ''} · Edge Function: ${h.functions_url || ''}/sla-monitor${h.queue && h.queue.last_error ? ` · último erro de envio: ${h.queue.last_error}` : ''}`;
+  }
+
+  /* Saúde: KPIs da plataforma (kpi_platform) e saúde do BI (admin_bi_health) */
+  const BI = window.pzBI; const F = BI.fmt;
+  async function loadPlatform() {
+    if (DEMO) { $('#sa-kpis').innerHTML = '<div class="viz-empty" style="grid-column:1/-1"><b>Modo demonstração.</b>Sem dados da plataforma.</div>'; return; }
+    const [{ data: d, error }, { data: bh }] = await Promise.all([sb.rpc('kpi_platform'), sb.rpc('admin_bi_health')]);
+    if (error || !d) { $('#sa-kpis').innerHTML = `<div class="viz-empty" style="grid-column:1/-1"><b>Não foi possível carregar.</b>${esc(error ? errMsg(error) : '')}</div>`; return; }
+    const t = d.totals || {};
+    const tile = (lbl, val, band, bandTxt, sec) => { const b = BI.bandMeta(band); return `<div class="tile"><div class="lbl">${esc(lbl)}</div><div class="val">${esc(val)}</div><div><span class="band ${b.cls}">${b.icon ? BI.ico(b.icon) : ''}${esc(bandTxt)}</span></div><div class="sec">${esc(sec || '')}</div></div>`; };
+    const activeBand = t.active_pct == null ? 'ok' : t.active_pct >= 0.85 ? 'ok' : t.active_pct >= 0.7 ? 'warn' : 'bad';
+    const riskBand = t.at_risk_pct == null ? 'ok' : t.at_risk_pct <= 0.2 ? 'ok' : t.at_risk_pct <= 0.35 ? 'warn' : 'bad';
+    const msgDelta = BI.delta(t.messages_7d, t.messages_prev7, 'int', true, '7 dias anteriores');
+    const provBad = (d.providers || []).filter(p => p.band === 'bad').length;
+    $('#sa-kpis').innerHTML = [
+      tile('Empresas ativas na semana', `${t.active_week || 0} de ${t.active_companies || 0}`, activeBand, 'faixa: 85% ou mais', '2+ consultores enviando em 3+ dias'),
+      tile('Volume processado (7 dias)', F.int(t.messages_7d), t.messages_prev7 > 0 && t.messages_7d < 0.6 * t.messages_prev7 ? 'bad' : t.messages_prev7 > 0 && t.messages_7d > 4 * t.messages_prev7 ? 'warn' : 'ok', 'faixa: sem queda de 40% nem salto de 300%', msgDelta.text ? msgDelta.text : 'sem base anterior'),
+      tile('Instâncias', `${t.instances_connected || 0} conectadas`, t.instances_down > 0 ? 'bad' : 'ok', t.instances_down > 0 ? `${t.instances_down} fora do ar` : 'todas no ar', `${provBad ? provBad + ' provedor(es) com problema' : 'provedores dentro da faixa'}`),
+      tile('Higiene do dado', `${t.low_hygiene || 0} abaixo de 50%`, t.low_hygiene > 0 ? 'warn' : 'ok', 'faixa: índice de 80% ou mais', 'motivo de perda, valor cotado e etapa preenchidos'),
+      tile('Risco de churn', `${t.at_risk || 0} empresa(s)`, riskBand, 'faixa: até 20% com pontuação 50+', 'queda de uso, painel sem abrir, consultores caindo, higiene baixa'),
+      tile('Consultores na plataforma', F.int(t.consultants), 'ok', `${t.companies || 0} empresa(s) cadastrada(s)`, 'membros ativos com distribution.receive')
+    ].join('');
+    $('#sa-sub').textContent = `semana de ${F.date(d.week_start)} · gerado ${new Date(d.generated_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
+    const al = d.alerts || [];
+    $('#sa-alerts').innerHTML = al.length ? al.map(a => `<div class="alert-row ${esc(a.severity)}"><span class="dot ${esc(a.severity)}"></span><span class="txt"><span class="t">${esc(a.title)} · ${esc(a.company || '')}</span><span class="c">${esc(a.text || '')}</span></span><span class="acts">${a.company_id ? `<a class="btn sm" href="#/empresa?id=${esc(a.company_id)}">Abrir empresa</a>` : '<a class="btn sm" href="#/instancias">Ver instâncias</a>'}</span></div>`).join('') : '<div class="empty-inline" style="padding:16px"><b>Tudo em ordem.</b><span>Nenhuma queda de uso, higiene baixa, falha de provedor ou instância fora do ar.</span></div>';
+    const WA = { connected: ['ok', 'conectado'], disconnected: ['bad', 'desconectado'], error: ['bad', 'com erro'], awaiting_qr: ['warn', 'aguardando QR'], draft: ['warn', 'em configuração'] };
+    $('#sa-companies tbody').innerHTML = (d.companies || []).map(c => { const w = WA[c.instance_status] || ['', 'sem instância']; const risk = c.churn_score >= 50 ? 'bad' : c.churn_score >= 30 ? 'warn' : 'ok'; const hy = c.hygiene_index == null ? null : Number(c.hygiene_index);
+      return `<tr><td><a class="link" href="#/empresa?id=${esc(c.id)}"><b>${esc(c.app_name || c.name)}</b></a><span class="sub">${esc(c.slug)} · ${c.consultants} consultor(es)${c.is_active ? '' : ' · inativa'}</span></td><td>${esc(c.plan_name || '')}</td><td><span class="status-txt"><span class="dot ${w[0]}"></span>${esc(w[1])}</span></td><td class="r">${F.int(c.messages_7d)}<span class="sub">${F.int(c.messages_prev7)} antes</span></td><td class="r">${F.int(c.human_out_7d)}<span class="sub">${F.int(c.human_out_prev7)} antes</span></td><td class="r">${c.active_week ? '<span class="chip ok">sim</span>' : '<span class="chip">não</span>'}<span class="sub">${c.active_consultants_week || 0} cons. · ${c.active_days || 0} dia(s)</span></td><td class="r">${hy == null ? '<span class="muted">sem dado</span>' : `<span class="chip ${hy >= 0.8 ? 'ok' : hy >= 0.5 ? 'warn' : 'bad'}">${F.pct(hy)}</span>`}</td><td class="r">${c.last_manager_kpi_view_at ? esc(relTime(c.last_manager_kpi_view_at)) : '<span class="muted">nunca</span>'}</td><td class="r"><span class="chip ${risk}">${c.churn_score}</span></td></tr>`; }).join('') || '<tr><td colspan="9"><div class="empty-inline"><b>Nenhuma empresa.</b></div></td></tr>';
+    $('#sa-providers tbody').innerHTML = (d.providers || []).map(p => { const b = BI.bandMeta(p.band === 'none' ? 'none' : p.band); return `<tr><td><span class="status-txt"><span class="dot ${p.band === 'bad' ? 'bad' : p.band === 'warn' ? 'warn' : p.band === 'ok' ? 'ok' : ''}"></span>${esc(p.label)}</span></td><td class="r">${p.instances}</td><td class="r">${p.down}</td><td class="r">${p.failure_rate == null ? 'sem envios' : F.pct(p.failure_rate, 1)}<span class="sub">${p.failed_out} de ${p.total_out}</span></td><td class="r">${p.disconnections_7d}</td><td class="r">${p.uptime_7d == null ? 'sem dado' : F.pct(p.uptime_7d, 1)}</td><td class="r">${p.latency_p50_s == null ? 'sem eventos' : `${F.secs(p.latency_p50_s)} / ${F.secs(p.latency_p95_s)}`}<span class="sub">${p.webhook_events_7d} eventos</span></td></tr>`; }).join('');
+    $('#sa-bench').innerHTML = (d.benchmark || []).length ? '<div class="tbl-wrap">' + BI.table([{ h: 'Segmento', f: r => r.segment === 'protecao_veicular' ? 'Proteção veicular' : r.segment }, { h: 'Empresas', r: true, f: r => String(r.companies) }, { h: '1ª resposta P25 / P50 / P75', r: true, f: r => `${F.secs(r.first_response_p25)} / ${F.secs(r.first_response_p50)} / ${F.secs(r.first_response_p75)}` }, { h: 'Até a cotação P25 / P50 / P75', r: true, f: r => `${F.secs(r.time_to_quote_p25)} / ${F.secs(r.time_to_quote_p50)} / ${F.secs(r.time_to_quote_p75)}` }, { h: 'Cotação para adesão P50', r: true, f: r => F.pct(r.quote_to_won_p50) }], d.benchmark) + '</div>' : '<div class="empty-inline"><b>Sem dados suficientes.</b><span>O benchmark aparece quando houver conversas com resposta nos últimos 30 dias.</span></div>';
+    if (bh) $('#sa-bi-foot').textContent = `BI: ${(bh.jobs || []).map(j => `${j.jobname} (${j.schedule}, ${j.active ? 'ativo' : 'inativo'}${j.last ? ', último ' + relTime(j.last.start_time) + ' ' + j.last.status : ''})`).join(' · ') || 'jobs do BI não agendados'} · ${F.int(bh.facts_rows)} conversas nos fatos de ${bh.companies_with_data} empresa(s)`;
+  }
+  $('#sa-refresh').onclick = async () => { busy($('#sa-refresh'), true, 'Atualizando'); if (!DEMO) { const { error } = await sb.rpc('bi_refresh', { p_scope: 'all' }); if (error) toast(errMsg(error), { bad: true }); } await loadPlatform(); busy($('#sa-refresh'), false); toast('BI atualizado.'); };
+
+  pz.router({
+    '': () => { location.hash = '#/empresas'; },
+    empresas: () => renderCompanies(),
+    nova: () => { setTimeout(() => $('#nc-name').focus(), 50); },
+    empresa: async params => { $$('[data-nav]').forEach(b => b.setAttribute('aria-current', b.dataset.nav === 'empresas' ? 'page' : 'false')); await loadCompanyDetail(params.id); if (!instances.length && !DEMO) await loadInstances(); showCeTab(params.aba === 'whatsapp' ? 'whatsapp' : 'pessoas'); },
+    instancias: async () => { await loadInstances(); renderInstances(); },
+    saude: async () => { await loadInstances(); renderInstances(); loadCronHealth(); loadPlatform(); }
+  }, name => { document.title = ({ empresas: 'Empresas', nova: 'Nova empresa', empresa: 'Empresa', instancias: 'Instâncias', saude: 'Saúde' }[name] || 'Admin') + ' · ProtecZap admin'; });
+})();
+</script>
+</body>
+</html>

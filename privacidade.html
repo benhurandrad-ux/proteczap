@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Política de privacidade</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css?v=1">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="config.js?v=1"></script>
+<script src="core.js?v=1"></script>
+</head>
+<body>
+<main class="doc-page" id="doc">
+  <div class="logo"><span data-brand-logo><span class="mark" data-brand-initial>P</span></span><span data-brand-name>ProtecZap</span></div>
+  <h1>Política de privacidade</h1>
+  <p class="sub" id="sub">Como os dados de quem conversa com a empresa pelo WhatsApp são tratados nesta plataforma.</p>
+  <div id="custom" class="hide"></div>
+  <div id="base">
+    <h2>1. Quem somos e quem é responsável</h2>
+    <p>Esta plataforma de atendimento comercial pelo WhatsApp é operada pela <b>Atria</b> (produto ProtecZap) e usada por empresas de proteção veicular para atender quem pede cotação, contrata um plano e acompanha a adesão. Na linguagem da Lei Geral de Proteção de Dados (Lei 13.709/2018):</p>
+    <ul>
+      <li>A <b>empresa que atende você</b> (a associação ou empresa de proteção veicular cuja marca aparece nesta página) é a <b>controladora</b>: decide por que e como seus dados são usados.</li>
+      <li>A <b>Atria</b> é a <b>operadora</b>: guarda e processa os dados em nome da empresa, seguindo as instruções dela e esta política.</li>
+    </ul>
+    <h2>2. Quais dados tratamos</h2>
+    <ul>
+      <li><b>Identificação e contato</b>: número de WhatsApp, nome exibido no WhatsApp e nome informado ao consultor.</li>
+      <li><b>Conteúdo das conversas</b>: mensagens de texto, áudios, fotos, vídeos, documentos e localização enviados ou recebidos pelo número da empresa.</li>
+      <li><b>Dados da cotação</b>: modelo e ano do veículo, placa, valor FIPE, uso do veículo, plano de interesse, mensalidade e adesão cotadas, data da vistoria.</li>
+      <li><b>Registros de atendimento</b>: etapa do funil, consultor responsável, horários de resposta, motivo de perda, notas internas da equipe.</li>
+      <li><b>Dados técnicos</b>: identificadores de mensagem do WhatsApp, status de entrega e leitura, registros de auditoria (quem fez o quê e quando).</li>
+    </ul>
+    <p>Não coletamos dados de grupos, listas de transmissão ou canais. A foto de perfil do WhatsApp só é guardada quando o provedor a disponibiliza e é a versão atual, substituída a cada sincronização.</p>
+    <h2>3. Para que usamos</h2>
+    <ul>
+      <li>Responder ao seu pedido de cotação e conduzir a contratação do plano (execução de contrato e procedimentos preliminares, art. 7º, V).</li>
+      <li>Distribuir o atendimento entre os consultores da empresa, medir tempo de resposta e organizar retornos combinados com você (legítimo interesse, art. 7º, IX).</li>
+      <li>Enviar lembretes e retornos sobre a sua cotação pelo próprio WhatsApp. Você pode pedir para parar a qualquer momento respondendo <b>SAIR</b> ou avisando o consultor.</li>
+      <li>Produzir indicadores agregados (quantidade de atendimentos, conversão, tempo de resposta) para a gestão da empresa. Esses indicadores não identificam pessoas.</li>
+      <li>Cumprir obrigações legais e regulatórias e exercer direitos em processos (art. 7º, II e VI).</li>
+    </ul>
+    <h2>4. Com quem compartilhamos</h2>
+    <ul>
+      <li><b>WhatsApp (Meta Platforms)</b>: as mensagens trafegam pelo WhatsApp Business, seja pela API oficial (Meta Cloud API) ou por um provedor de integração contratado pela empresa (Z-API). Cada um segue a própria política de privacidade.</li>
+      <li><b>Infraestrutura</b>: banco de dados, arquivos e funções ficam no Supabase, em servidores na região de São Paulo (Brasil). Mídia recebida é copiada para nosso armazenamento privado; o provedor mantém a cópia dele por prazo próprio (Z-API 30 dias, Meta 7 dias).</li>
+      <li><b>Equipe da empresa</b>: consultores veem só as conversas que atendem; gestores veem as conversas da empresa. Ninguém de outra empresa tem acesso.</li>
+    </ul>
+    <p>Não vendemos dados pessoais nem os usamos para publicidade de terceiros.</p>
+    <h2>5. Por quanto tempo guardamos</h2>
+    <p>Cada empresa define um prazo de retenção para o conteúdo das conversas (mensagens e arquivos). Vencido o prazo, o conteúdo é apagado automaticamente e ficam apenas os registros agregados e a trilha de auditoria, sem o texto das mensagens. <span id="ret"></span> Registros de auditoria são mantidos por até 5 anos.</p>
+    <h2>6. Seus direitos</h2>
+    <p>Você pode, a qualquer momento, pedir à empresa que atende você:</p>
+    <ul>
+      <li><b>Acesso e portabilidade</b>: uma cópia em arquivo (JSON) com seus dados, conversas e arquivos.</li>
+      <li><b>Correção</b> de dados incompletos ou desatualizados.</li>
+      <li><b>Anonimização ou eliminação</b>: seu nome, número, ficha, mensagens e arquivos são removidos de forma irreversível; ficam só contagens que não identificam você.</li>
+      <li><b>Oposição e revogação</b>: parar de receber mensagens (responda SAIR) ou revogar um consentimento dado.</li>
+      <li><b>Informação</b> sobre com quem seus dados foram compartilhados.</li>
+    </ul>
+    <p>O gestor da empresa executa a exportação e a anonimização na própria plataforma; cada pedido fica registrado na auditoria. Se preferir, fale com o encarregado (DPO) indicado abaixo.</p>
+    <h2>7. Segurança</h2>
+    <p>Acesso por login individual com senha, isolamento por empresa em todas as tabelas (row level security), arquivos em armazenamento privado com links assinados e temporários, credenciais dos provedores em cofre criptografado, webhooks autenticados por segredo ou assinatura, registro de auditoria imutável e limites de envio para evitar uso abusivo.</p>
+    <h2>8. Cookies e armazenamento local</h2>
+    <p>Esta plataforma não usa cookies de rastreamento. O navegador guarda apenas a sessão de quem está logado e preferências de tela (filtros, aba escolhida). Nada disso identifica a pessoa que conversa com a empresa.</p>
+    <h2>9. Encarregado (DPO) e contato</h2>
+    <div class="box" id="dpo">Encarregado pelo tratamento de dados: <b id="dpo-mail">a definir</b>. Para dúvidas sobre esta política ou para exercer seus direitos, escreva para esse e-mail ou fale com a empresa pelo mesmo WhatsApp em que foi atendido.</div>
+    <h2>10. Alterações</h2>
+    <p>Esta política pode ser atualizada. A data da última alteração aparece no rodapé. Mudanças relevantes são comunicadas pela empresa que atende você.</p>
+  </div>
+  <div class="foot"><span id="upd"></span><a href="login.html" id="back">Voltar ao login</a><span class="powered" data-powered style="margin:0">powered by ProtecZap</span></div>
+</main>
+<script>
+(async () => {
+  const { $, sb, configured, esc, resolveBranding, href } = window.pz;
+  const b = await resolveBranding();
+  document.title = 'Política de privacidade · ' + ((b && b.app_name) || 'ProtecZap');
+  try { $('#back').href = href('login.html'); } catch (e) { /* link simples */ }
+  if (!configured) return;
+  try {
+    const { data } = await sb.rpc('public_privacy');
+    if (data) {
+      if (data.policy_text) { $('#custom').innerHTML = data.policy_text.split(/\n{2,}/).map(par => `<p>${esc(par).replace(/\n/g, '<br>')}</p>`).join(''); $('#custom').classList.remove('hide'); $('#base').classList.add('hide'); }
+      if (data.dpo_email) { $('#dpo-mail').innerHTML = `<a href="mailto:${esc(data.dpo_email)}">${esc(data.dpo_email)}</a>`; }
+      if (data.retention_default_days) $('#ret').textContent = `O prazo padrão da plataforma é de ${data.retention_default_days} dias.`;
+      if (data.updated_at) $('#upd').textContent = 'Atualizada em ' + new Date(data.updated_at).toLocaleDateString('pt-BR');
+    }
+  } catch (e) { /* política base permanece */ }
+})();
+</script>
+</body>
+</html>
